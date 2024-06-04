@@ -67,7 +67,7 @@ static void gtk_rot_knob_init(GtkRotKnob * knob,
  */
 static void gtk_rot_knob_update(GtkRotKnob * knob)
 {
-    gchar           b[7];
+    gchar           b[9];
     gchar          *buff;
     guint           i;
 
@@ -421,6 +421,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
 
     table = gtk_grid_new();
 
+    //g_print("create_knob_a\n");
     /* +100 deg */
     knob->buttons[0] = gtk_button_new_with_label("\342\226\264");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[0]), GTK_RELIEF_NONE);
@@ -430,6 +431,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[0], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_b\n");
     /* +10 deg */
     knob->buttons[1] = gtk_button_new_with_label("\342\226\264");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[1]), GTK_RELIEF_NONE);
@@ -439,6 +441,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[1], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_c\n");
     /* +1 deg */
     knob->buttons[2] = gtk_button_new_with_label("\342\226\264");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[2]), GTK_RELIEF_NONE);
@@ -448,6 +451,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[2], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_d\n");
     /* +0.1 deg */
     knob->buttons[3] = gtk_button_new_with_label("\342\226\264");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[3]), GTK_RELIEF_NONE);
@@ -457,6 +461,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[3], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_e\n");
     /* +0.01 deg */
     knob->buttons[4] = gtk_button_new_with_label("\342\226\264");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[4]), GTK_RELIEF_NONE);
@@ -465,6 +470,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[4], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_f\n");
     /* -100 deg */
     knob->buttons[5] = gtk_button_new_with_label("\342\226\276");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[5]), GTK_RELIEF_NONE);
@@ -474,6 +480,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[5], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_g\n");
     /* -10 deg */
     knob->buttons[6] = gtk_button_new_with_label("\342\226\276");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[6]), GTK_RELIEF_NONE);
@@ -483,6 +490,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[6], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_h\n");
     /* -1 deg */
     knob->buttons[7] = gtk_button_new_with_label("\342\226\276");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[7]), GTK_RELIEF_NONE);
@@ -492,6 +500,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[7], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_i\n");
     /* -0.1 deg */
     knob->buttons[8] = gtk_button_new_with_label("\342\226\276");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[8]), GTK_RELIEF_NONE);
@@ -501,6 +510,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[8], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_j\n");
     /* -0.01 deg */
     knob->buttons[9] = gtk_button_new_with_label("\342\226\276");
     gtk_button_set_relief(GTK_BUTTON(knob->buttons[9]), GTK_RELIEF_NONE);
@@ -510,6 +520,7 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
     g_signal_connect(knob->buttons[9], "clicked",
                      G_CALLBACK(button_clicked_cb), widget);
 
+    //g_print("create_knob_k\n");
     /* create labels */
     for (i = 0; i < 7; i++)
     {
@@ -533,14 +544,19 @@ GtkWidget      *gtk_rot_knob_new(gdouble min, gdouble max, gdouble val)
 
     }
 
+    //g_print("create_knob_l\n");
     /* degree sign */
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label),
                          "<span size='xx-large'>\302\260</span>");
     gtk_grid_attach(GTK_GRID(table), label, 7, 1, 1, 1);
+    //g_print("create_knob_m\n");
     gtk_rot_knob_update(knob);
+    //g_print("create_knob_o\n");
     gtk_container_add(GTK_CONTAINER(widget), table);
+    //g_print("create_knob_p\n");
     gtk_widget_show_all(widget);
+    //g_print("create_knob_q\n");
 
     return widget;
 }

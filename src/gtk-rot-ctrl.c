@@ -646,24 +646,29 @@ static GtkWidget *create_az_widgets(GtkRotCtrl * ctrl)
 
     frame = gtk_frame_new(_("Azimuth"));
 
+    //g_print("create_az_a\n");
     table = gtk_grid_new();
     gtk_container_set_border_width(GTK_CONTAINER(table), 5);
     gtk_grid_set_column_spacing(GTK_GRID(table), 5);
     gtk_grid_set_row_spacing(GTK_GRID(table), 5);
     gtk_container_add(GTK_CONTAINER(frame), table);
 
+    //g_print("create_az_b\n");
     ctrl->AzSet = gtk_rot_knob_new(0.0, 360.0, 180.0);
     gtk_grid_attach(GTK_GRID(table), ctrl->AzSet, 0, 0, 3, 1);
 
+    //g_print("create_az_c\n");
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), _("Read:"));
     g_object_set(label, "xalign", 1.0f, "yalign", 0.5f, NULL);
     gtk_grid_attach(GTK_GRID(table), label, 0, 1, 1, 1);
 
+    //g_print("create_az_d\n");
     ctrl->AzRead = gtk_label_new(" --- ");
     g_object_set(ctrl->AzRead, "xalign", 0.0f, "yalign", 0.5f, NULL);
     gtk_grid_attach(GTK_GRID(table), ctrl->AzRead, 1, 1, 1, 1);
 
+    //g_print("create_az_e\n");
     return frame;
 }
 
