@@ -37,3 +37,5 @@ m4/
 GTAGS
 GRTAGS
 GPATH
+*.d
+*.o
