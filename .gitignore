@@ -39,3 +39,4 @@ GRTAGS
 GPATH
 *.d
 *.o
+gpredict-*.zip
