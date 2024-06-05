@@ -1,7 +1,6 @@
 *~
 .version
 .dirstamp
-Makefile
 Makefile.in
 build-config.h
 build-config.h.in
@@ -40,3 +39,5 @@ GPATH
 *.d
 *.o
 gpredict-*.zip
+*.exe
+

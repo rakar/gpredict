@@ -241,7 +241,7 @@ static GtkWidget *create_editor_widgets(rotor_conf_t * conf)
     label = gtk_label_new(_(" Min Az"));
     g_object_set(label, "xalign", 1.0, "yalign", 0.5, NULL);
     gtk_grid_attach(GTK_GRID(table), label, 0, 5, 1, 1);
-    minaz = gtk_spin_button_new_with_range(-200, 100, 1);
+    minaz = gtk_spin_button_new_with_range(-360, 100, 1);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(minaz), 0);
     gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(minaz), TRUE);
     gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(minaz), FALSE);
@@ -277,7 +277,7 @@ static GtkWidget *create_editor_widgets(rotor_conf_t * conf)
     label = gtk_label_new(_(" Azimuth end stop position"));
     g_object_set(label, "xalign", 1.0, "yalign", 0.5, NULL);
     gtk_grid_attach(GTK_GRID(table), label, 1, 7, 2, 1);
-    azstoppos = gtk_spin_button_new_with_range(-180, 360, 1);
+    azstoppos = gtk_spin_button_new_with_range(-360, 360, 1);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(azstoppos), 0);
     gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(azstoppos), TRUE);
     gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(azstoppos), FALSE);

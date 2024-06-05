@@ -820,6 +820,9 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
             rotel = ctrl->client.ele_in;
             g_mutex_unlock(&ctrl->client.mutex);
 
+            // Why not just show raw angles?
+            // Maybe done in client...
+
             /* ensure Azimuth angle is 0-360 degrees */
             while (rotaz < 0.0)
                 rotaz += 360.0;
@@ -855,6 +858,13 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
                 }
             }
         }
+
+
+        // This is where we move the Rotator.
+        // if we're close, we're not supposed to move
+        // but it seems to nudge the target along at times. 
+        // So we need to know that we are away and behind the track. 
+        // This is mentioned below, but it still happens.
 
         /* if tolerance exceeded */
         if ((fabs(setaz - rotaz) > ctrl->threshold) ||
