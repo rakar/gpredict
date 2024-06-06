@@ -439,6 +439,11 @@ static void render_aztype(GtkTreeViewColumn * col,
             ("-180\302\260 \342\206\222 0\302\260 \342\206\222 +180\302\260");
         break;
 
+    case ROT_AZ_TYPE_RAW:
+        text = g_strdup_printf
+            ("? \342\206\222 0\302\260 \342\206\222 ?");
+        break;
+
     default:
         text = g_strdup_printf(_("Unknown (%d)"), number);
         break;

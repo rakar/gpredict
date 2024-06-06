@@ -150,6 +150,12 @@ static void aztype_changed_cb(GtkComboBox * box, gpointer data)
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(azstoppos), -180.0);
         break;
 
+    case ROT_AZ_TYPE_RAW:
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(minaz), -270.0);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(maxaz), +270.0);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(azstoppos), -270.0);
+        break;
+
     default:
         sat_log_log(SAT_LOG_LEVEL_ERROR,
                     _("%s:%s: Invalid AZ rotator type."), __FILE__, __func__);
@@ -228,11 +234,13 @@ static GtkWidget *create_editor_widgets(rotor_conf_t * conf)
                                    "0\302\260 \342\206\222 180\302\260 \342\206\222 360\302\260");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aztype),
                                    "-180\302\260 \342\206\222 0\302\260 \342\206\222 +180\302\260");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aztype),
+                                   "? \342\206\222 0\302\260 \342\206\222 ?");
     gtk_combo_box_set_active(GTK_COMBO_BOX(aztype), 0);
     gtk_widget_set_tooltip_text(aztype,
                                 _("Select your azimuth range here. Note that "
                                   "gpredict assumes that 0\302\260 is at North "
-                                  "and + direction is clockwise for both types"));
+                                  "and + direction is clockwise for all types"));
     gtk_grid_attach(GTK_GRID(table), aztype, 1, 4, 2, 1);
     g_signal_connect(G_OBJECT(aztype), "changed",
                      G_CALLBACK(aztype_changed_cb), NULL);
