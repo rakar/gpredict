@@ -46,8 +46,7 @@
 #define KEY_AZSTOPPOS   "AzStopPos"
 #define KEY_THLD        "Threshold"
 
-#define DEFAULT_CYCLE_MS    1000
-#define DEFAULT_THLD_DEG    5.0
+
 
 /**
  * \brief Read rotator configuration.
@@ -255,12 +254,12 @@ void rotor_conf_save(rotor_conf_t * conf)
     // so check for the bad value 0 and don't write. 
     // TODO: find out where they are getting cleared. 
     
-    if (conf->cycle == DEFAULT_CYCLE_MS || conf->cycle==0)
+    if (conf->cycle == DEFAULT_CYCLE_MS)
         g_key_file_remove_key(cfg, GROUP, KEY_CYCLE, NULL);
     else
         g_key_file_set_integer(cfg, GROUP, KEY_CYCLE, conf->cycle);
 
-    if (conf->threshold == DEFAULT_THLD_DEG || conf->threshold==0)
+    if (conf->threshold == DEFAULT_THLD_DEG)
         g_key_file_remove_key(cfg, GROUP, KEY_THLD, NULL);
     else
         g_key_file_set_double(cfg, GROUP, KEY_THLD, conf->threshold);

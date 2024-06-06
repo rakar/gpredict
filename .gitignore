@@ -41,3 +41,5 @@ GPATH
 gpredict-*.zip
 *.exe
 
+win32/gpredict-con.exe
+win32/gpredict.exe

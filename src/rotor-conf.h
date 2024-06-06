@@ -32,6 +32,8 @@
 
 #include <glib.h>
 
+#define DEFAULT_CYCLE_MS    1000
+#define DEFAULT_THLD_DEG    5.0
 
 typedef enum {
     ROT_AZ_TYPE_360 = 0,        /*!< Azimuth in range 0..360 */

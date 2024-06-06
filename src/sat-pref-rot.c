@@ -52,12 +52,14 @@ static void add_cb(GtkWidget * button, gpointer data)
         .name = NULL,
         .host = NULL,
         .port = 4533,
+        .cycle = DEFAULT_CYCLE_MS,
         .minaz = 0,
         .maxaz = 360,
         .minel = 0,
         .maxel = 90,
         .aztype = ROT_AZ_TYPE_360,
         .azstoppos = 0,
+        .threshold= DEFAULT_THLD_DEG,
     };
 
     /* run rot conf editor */
@@ -70,15 +72,18 @@ static void add_cb(GtkWidget * button, gpointer data)
             GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(rotlist)));
         gtk_list_store_append(liststore, &item);
         gtk_list_store_set(liststore, &item,
-                           ROT_LIST_COL_NAME, conf.name,
-                           ROT_LIST_COL_HOST, conf.host,
-                           ROT_LIST_COL_PORT, conf.port,
-                           ROT_LIST_COL_MINAZ, conf.minaz,
-                           ROT_LIST_COL_MAXAZ, conf.maxaz,
-                           ROT_LIST_COL_MINEL, conf.minel,
-                           ROT_LIST_COL_MAXEL, conf.maxel,
-                           ROT_LIST_COL_AZTYPE, conf.aztype,
-                           ROT_LIST_COL_AZSTOPPOS, conf.azstoppos, -1);
+                               ROT_LIST_COL_NAME, conf.name,
+                               ROT_LIST_COL_HOST, conf.host,
+                               ROT_LIST_COL_PORT, conf.port,
+                               ROT_LIST_COL_CYCLE, conf.cycle,
+                               ROT_LIST_COL_MINAZ, conf.minaz,
+                               ROT_LIST_COL_MAXAZ, conf.maxaz,
+                               ROT_LIST_COL_MINEL, conf.minel,
+                               ROT_LIST_COL_MAXEL, conf.maxel,
+                               ROT_LIST_COL_AZTYPE, conf.aztype,
+                               ROT_LIST_COL_AZSTOPPOS, conf.azstoppos,
+                               ROT_LIST_COL_THRESHOLD, conf.threshold,
+                               -1);
 
         g_free(conf.name);
 
@@ -129,15 +134,18 @@ static void edit_cb(GtkWidget * button, gpointer data)
     if (gtk_tree_selection_get_selected(selection, &selmod, &iter))
     {
         gtk_tree_model_get(model, &iter,
-                           ROT_LIST_COL_NAME, &conf.name,
-                           ROT_LIST_COL_HOST, &conf.host,
-                           ROT_LIST_COL_PORT, &conf.port,
-                           ROT_LIST_COL_MINAZ, &conf.minaz,
-                           ROT_LIST_COL_MAXAZ, &conf.maxaz,
-                           ROT_LIST_COL_MINEL, &conf.minel,
-                           ROT_LIST_COL_MAXEL, &conf.maxel,
-                           ROT_LIST_COL_AZTYPE, &conf.aztype,
-                           ROT_LIST_COL_AZSTOPPOS, &conf.azstoppos, -1);
+                               ROT_LIST_COL_NAME, &conf.name,
+                               ROT_LIST_COL_HOST, &conf.host,
+                               ROT_LIST_COL_PORT, &conf.port,
+                               ROT_LIST_COL_CYCLE, &conf.cycle,
+                               ROT_LIST_COL_MINAZ, &conf.minaz,
+                               ROT_LIST_COL_MAXAZ, &conf.maxaz,
+                               ROT_LIST_COL_MINEL, &conf.minel,
+                               ROT_LIST_COL_MAXEL, &conf.maxel,
+                               ROT_LIST_COL_AZTYPE, &conf.aztype,
+                               ROT_LIST_COL_AZSTOPPOS, &conf.azstoppos,
+                               ROT_LIST_COL_THRESHOLD, &conf.threshold,
+                               -1);
     }
     else
     {
@@ -164,15 +172,18 @@ static void edit_cb(GtkWidget * button, gpointer data)
     if (conf.name != NULL)
     {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                           ROT_LIST_COL_NAME, conf.name,
-                           ROT_LIST_COL_HOST, conf.host,
-                           ROT_LIST_COL_PORT, conf.port,
-                           ROT_LIST_COL_MINAZ, conf.minaz,
-                           ROT_LIST_COL_MAXAZ, conf.maxaz,
-                           ROT_LIST_COL_MINEL, conf.minel,
-                           ROT_LIST_COL_MAXEL, conf.maxel,
-                           ROT_LIST_COL_AZTYPE, conf.aztype,
-                           ROT_LIST_COL_AZSTOPPOS, conf.azstoppos, -1);
+                               ROT_LIST_COL_NAME, conf.name,
+                               ROT_LIST_COL_HOST, conf.host,
+                               ROT_LIST_COL_PORT, conf.port,
+                               ROT_LIST_COL_CYCLE, conf.cycle,
+                               ROT_LIST_COL_MINAZ, conf.minaz,
+                               ROT_LIST_COL_MAXAZ, conf.maxaz,
+                               ROT_LIST_COL_MINEL, conf.minel,
+                               ROT_LIST_COL_MAXEL, conf.maxel,
+                               ROT_LIST_COL_AZTYPE, conf.aztype,
+                               ROT_LIST_COL_AZSTOPPOS, conf.azstoppos,
+                               ROT_LIST_COL_THRESHOLD, conf.threshold,
+                               -1);
     }
 
     /* clean up memory */
@@ -252,13 +263,15 @@ static GtkTreeModel *create_and_fill_model()
     /* create a new list store */
     liststore = gtk_list_store_new(ROT_LIST_COL_NUM, G_TYPE_STRING,     // name
                                    G_TYPE_STRING,       // host
-                                   G_TYPE_INT,  // port
+                                   G_TYPE_INT,          // port
+                                   G_TYPE_INT,          // cycle
                                    G_TYPE_DOUBLE,       // Min Az
                                    G_TYPE_DOUBLE,       // Max Az
                                    G_TYPE_DOUBLE,       // Min El
                                    G_TYPE_DOUBLE,       // Max El
-                                   G_TYPE_INT,  // Az type
-                                   G_TYPE_DOUBLE        // Az Stop Position
+                                   G_TYPE_INT,          // Az type
+                                   G_TYPE_DOUBLE,       // Az Stop Position
+                                   G_TYPE_DOUBLE        // threshold
         );
     gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore),
                                          ROT_LIST_COL_NAME,
@@ -282,16 +295,18 @@ static GtkTreeModel *create_and_fill_model()
                     /* insert conf into liststore */
                     gtk_list_store_append(liststore, &item);
                     gtk_list_store_set(liststore, &item,
-                                       ROT_LIST_COL_NAME, conf.name,
-                                       ROT_LIST_COL_HOST, conf.host,
-                                       ROT_LIST_COL_PORT, conf.port,
-                                       ROT_LIST_COL_MINAZ, conf.minaz,
-                                       ROT_LIST_COL_MAXAZ, conf.maxaz,
-                                       ROT_LIST_COL_MINEL, conf.minel,
-                                       ROT_LIST_COL_MAXEL, conf.maxel,
-                                       ROT_LIST_COL_AZTYPE, conf.aztype,
-                                       ROT_LIST_COL_AZSTOPPOS, conf.azstoppos,
-                                       -1);
+                               ROT_LIST_COL_NAME, conf.name,
+                               ROT_LIST_COL_HOST, conf.host,
+                               ROT_LIST_COL_PORT, conf.port,
+                               ROT_LIST_COL_CYCLE, conf.cycle,
+                               ROT_LIST_COL_MINAZ, conf.minaz,
+                               ROT_LIST_COL_MAXAZ, conf.maxaz,
+                               ROT_LIST_COL_MINEL, conf.minel,
+                               ROT_LIST_COL_MAXEL, conf.maxel,
+                               ROT_LIST_COL_AZTYPE, conf.aztype,
+                               ROT_LIST_COL_AZSTOPPOS, conf.azstoppos,
+                               ROT_LIST_COL_THRESHOLD, conf.threshold,
+                               -1);
 
                     sat_log_log(SAT_LOG_LEVEL_DEBUG,
                                 _("%s:%d: Read %s"),
@@ -616,12 +631,15 @@ void sat_pref_rot_ok()
                                ROT_LIST_COL_NAME, &conf.name,
                                ROT_LIST_COL_HOST, &conf.host,
                                ROT_LIST_COL_PORT, &conf.port,
+                               ROT_LIST_COL_CYCLE, &conf.cycle,
                                ROT_LIST_COL_MINAZ, &conf.minaz,
                                ROT_LIST_COL_MAXAZ, &conf.maxaz,
                                ROT_LIST_COL_MINEL, &conf.minel,
                                ROT_LIST_COL_MAXEL, &conf.maxel,
                                ROT_LIST_COL_AZTYPE, &conf.aztype,
-                               ROT_LIST_COL_AZSTOPPOS, &conf.azstoppos, -1);
+                               ROT_LIST_COL_AZSTOPPOS, &conf.azstoppos,
+                               ROT_LIST_COL_THRESHOLD, &conf.threshold,
+                               -1);
             rotor_conf_save(&conf);
 
             /* free conf buffer */
