@@ -250,12 +250,17 @@ void rotor_conf_save(rotor_conf_t * conf)
     g_key_file_set_double(cfg, GROUP, KEY_MAXEL, conf->maxel);
     g_key_file_set_double(cfg, GROUP, KEY_AZSTOPPOS, conf->azstoppos);
 
-    if (conf->cycle == DEFAULT_CYCLE_MS)
+    // hack to work around cleared cycle/threshold values. 
+    // These are getting set to 0 and then being written that way 
+    // so check for the bad value 0 and don't write. 
+    // TODO: find out where they are getting cleared. 
+    
+    if (conf->cycle == DEFAULT_CYCLE_MS || conf->cycle==0)
         g_key_file_remove_key(cfg, GROUP, KEY_CYCLE, NULL);
     else
         g_key_file_set_integer(cfg, GROUP, KEY_CYCLE, conf->cycle);
 
-    if (conf->threshold == DEFAULT_THLD_DEG)
+    if (conf->threshold == DEFAULT_THLD_DEG || conf->threshold==0)
         g_key_file_remove_key(cfg, GROUP, KEY_THLD, NULL);
     else
         g_key_file_set_double(cfg, GROUP, KEY_THLD, conf->threshold);

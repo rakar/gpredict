@@ -726,6 +726,15 @@ static void track_toggle_cb(GtkToggleButton * button, gpointer data)
     gtk_widget_set_sensitive(ctrl->ElSet, !ctrl->tracking);
 }
 
+
+// This method seems fundamentally flawed, 
+// possibly due to overly combining the angle display
+// and rotor control. Displaying 0-360 or -180 - 180 is fine,
+// but sending the rotor to 380 is fine as long as it is 
+// within the limits of the rotator
+// Need to find out if paths are created to be as close to 
+// zero as possible (but no closer) 
+
 /**
  * Rotator controller timeout function
  *
@@ -821,7 +830,7 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
             g_mutex_unlock(&ctrl->client.mutex);
 
             // Why not just show raw angles?
-            // Maybe done in client...
+            // Paths are short... (<180)
 
             /* ensure Azimuth angle is 0-360 degrees */
             while (rotaz < 0.0)
