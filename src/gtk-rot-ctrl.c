@@ -744,11 +744,20 @@ static void track_toggle_cb(GtkToggleButton * button, gpointer data)
 static gboolean rot_ctrl_timeout_cb(gpointer data)
 {
     GtkRotCtrl     *ctrl = GTK_ROT_CTRL(data);
-    gdouble         rotaz = 0.0, rotel = 0.0;
+
     gdouble         setaz = 0.0, setel = 45.0;
+    gdouble         rotaz = 0.0, rotel = 0.0;  // Rotor Actual
+    gdouble         pthaz = 0.0, pthel = 0.0;  // Satellite or knobs 
+    gdouble         trgaz = 0.0, trgel = 0.0;  // Target location s/b within margin
+    gdouble         dspaz = 0.0, dspel = 0.0;  // Display version of target
+    gdouble         polsataz = 0.0, polsatel = 0.0;  // Polar Satellite if tracking (polar values must be >0)
+    gdouble         polrotaz = 0.0, polrotel = 0.0;  // Polar Rotor actual
+    gdouble         poltrgaz = 0.0, poltrgel = 0.0;  // Polar Target
+
     gchar          *text;
     gboolean        error = FALSE;
     sat_t           sat_working, *sat;
+    gint            watchdog;
 
     /* parameters for path predictions */
     gdouble         time_delta;
@@ -756,6 +765,97 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
 
 #define SAFE_AZI(azi) CLAMP(azi, ctrl->conf->minaz, ctrl->conf->maxaz)
 #define SAFE_ELE(ele) CLAMP(ele, ctrl->conf->minel, ctrl->conf->maxel)
+
+    // For now, Redevelop this entire routine under ROT_AZ_TYPE_RAW
+    // with future plans to integrate the other options
+
+    // First define modes:
+    // tracking/Engaged
+    // Tracking/Not Engaged
+    // Not Tracking/Engaged
+    // Not Tracking/Not Engaged
+
+    // knobs should show Target Position
+    // Read  should show Read Position
+    // Polar should show Sat Position
+    // Polar should show Target Position
+    // Polar should show Read Position
+    // Command 
+
+    if (ctrl->conf->aztype == ROT_AZ_TYPE_RAW) 
+    {
+        // Start by getting where we would like to point 
+        if (!ctrl->tracking || !ctrl->target)
+        {
+            // if not tracking a target, just get knobs
+            // and we're basically done
+            pthaz = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->AzSet));
+            pthel = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->ElSet));
+            trgaz = pthaz;
+            trgel = pthel;
+            
+
+        }
+        else 
+        {
+            if (ctrl->target->el < 0.0)
+            {
+                if (ctrl->pass != NULL)
+                {
+                    if (ctrl->t < ctrl->pass->aos)
+                    {
+                        pthaz = ctrl->pass->aos_az;
+                        pthel = 0.0;
+                    }
+                    else if (ctrl->t > ctrl->pass->los)
+                    {
+                        pthaz = ctrl->pass->los_az;
+                        pthel = 0.0;
+                    
+                    }   
+                }
+            }
+            else
+            {
+                pthaz = ctrl->target->az;
+                pthel = ctrl->target->el;
+            }
+        }
+
+        // Try to bring that within the physical limits of the rotator
+        watchdog = 0;
+        while (pthaz > ctrl->conf->maxaz && watchdog<5)
+        {
+            pthaz -= 360;
+            watchdog++;
+        }
+        watchdog = 0;
+        while (pthaz < ctrl->conf->minaz && watchdog<5)
+        {
+            pthaz += 360;
+            watchdog++;
+        }
+
+        // Now lets pick control points that we know are safe
+        setaz = SAFE_AZI(pthaz); 
+        setel = SAFE_ELE(pthel);
+
+        // format display 
+        switch (ctrl->conf->aztype)
+        {
+        case ROT_AZ_TYPE_RAW:
+            dspaz = pthaz;
+            dspel = pthel;
+            break;
+        
+        default:
+            break;
+        } 
+
+
+
+
+    }
 
     /* If we are tracking and the target satellite is within
        range, set the rotor position controller knob values to
@@ -830,7 +930,7 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
             g_mutex_unlock(&ctrl->client.mutex);
 
             // Why not just show raw angles?
-            // Paths are short... (<180)
+            // Because -az won't display THis is how we clear them. 
 
             /* ensure Azimuth angle is 0-360 degrees */
             while (rotaz < 0.0)
@@ -921,6 +1021,14 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
                        tolerance the next time we enter the loop and we end up 
                        pushing ourselves away from the satellite.
                      */
+
+                    // No... Regardless of the final step size, just because 
+                    // position is within threshold at some time t, doesn't 
+                    // mean that it will be within threshold at some time t+step. 
+                    // this code does nudge. Regardless we're updatingt the
+                    // position due to the fact that we've already satisfied delay,
+                    // so I believe we just want to worry about getting it to the right
+                    // position now. 
                     while (step_size > (ctrl->delay / 1000.0 / 4.0 / (secday)))
                     {
                         predict_calc(sat, ctrl->qth, ctrl->t + time_delta);
