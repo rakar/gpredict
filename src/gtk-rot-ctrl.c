@@ -946,6 +946,9 @@ static gdouble gtk_rot_ctrl_profile_az(gpointer *data)
     pass_detail_t *detail;
     gdouble smoothaz;
     gdouble minaz = 10000, maxaz = -10000;
+    gdouble offsets[3] = {-360,0,360}; 
+    gdouble maxstretch = 10000.0; 
+
 
     if (ctrl->pass != NULL)
     {
@@ -966,18 +969,20 @@ static gdouble gtk_rot_ctrl_profile_az(gpointer *data)
                     maxaz = smoothaz;
             }
         }
-        if ((minaz > ctrl->conf->minaz) && (maxaz < ctrl->conf->maxaz))
+        for(int i=0;i<3;i++) 
         {
-            offset = 0.0;
-        }
-        else if (((minaz-360) > ctrl->conf->minaz) && ((maxaz-360) < ctrl->conf->maxaz))
-        {
-            offset = -360;
-        }
-        else if (((minaz+360) > ctrl->conf->minaz) && ((maxaz+360) < ctrl->conf->maxaz))
-        {
-            offset = 360;
-        }
+            gdouble low = (minaz+offsets[i]);
+            gdouble high = (maxaz+offsets[i]); 
+            if ((low > ctrl->conf->minaz) && (high < ctrl->conf->maxaz))
+            {
+                gdouble stretch = fmax(fabs(low),fabs(high));
+                if(stretch<maxstretch) {
+                    maxstretch = stretch;
+                    offset = offsets[i];
+                }                
+            }
+        }    
+
         g_print("Path Profiled... minAz: %f, mazAz: %f, offset: %f\n",minaz,maxaz,offset);
     }
     return offset;
@@ -1288,7 +1293,14 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
                     trgaz = rot_ctrl_smooth_az(ctrl, trgaz);
                 }
 
-                trgaz = SAFE_AZI(trgaz+pthofs);
+                g_print("debug: trgaz: %f, pthofs:%f",trgaz,pthofs);
+                ctrl->lastTrgAz = trgaz;
+                ctrl->lastTrgEl = trgel;
+                ctrl->lastTrgSet = TRUE;
+
+                trgaz += pthofs;
+                g_print("debug2: trgaz: %f, pthofs:%f",trgaz,pthofs);
+                trgaz = SAFE_AZI(trgaz);
                 trgel = SAFE_ELE(trgel);
                 dspaz = trgaz;
                 dspel = trgel;
@@ -1325,9 +1337,6 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
                     ctrl->client.new_trg = TRUE;
                     g_mutex_unlock(&ctrl->client.mutex);
                 }
-                ctrl->lastTrgAz = trgaz;
-                ctrl->lastTrgEl = trgel;
-                ctrl->lastTrgSet = TRUE;
             }
         }
         else // error
