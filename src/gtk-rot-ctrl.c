@@ -553,6 +553,7 @@ void gtk_rot_ctrl_update(GtkRotCtrl *ctrl, gdouble t)
                     /* inside an unexpected/unpredicted pass */
                     free_pass(ctrl->pass);
                     ctrl->pass = NULL;
+                    ctrl->lastTrgSet=FALSE;
                     ctrl->pass = get_current_pass(ctrl->target, ctrl->qth, t);
                     set_flipped_pass(ctrl);
                     gtk_polar_plot_set_pass(GTK_POLAR_PLOT(ctrl->plot),
@@ -570,6 +571,7 @@ void gtk_rot_ctrl_update(GtkRotCtrl *ctrl, gdouble t)
                     /* if the next pass is not the one for the target */
                     free_pass(ctrl->pass);
                     ctrl->pass = NULL;
+                    ctrl->lastTrgSet=FALSE;
                     ctrl->pass = get_pass(ctrl->target, ctrl->qth, t, 3.0);
                     set_flipped_pass(ctrl);
                     /* update polar plot */
@@ -585,6 +587,7 @@ void gtk_rot_ctrl_update(GtkRotCtrl *ctrl, gdouble t)
                 {
                     free_pass(ctrl->pass);
                     ctrl->pass = NULL;
+                    ctrl->lastTrgSet=FALSE;
                     ctrl->pass = get_pass(ctrl->target, ctrl->qth, t, 3.0);
                     set_flipped_pass(ctrl);
                     /* update polar plot */
@@ -1030,8 +1033,7 @@ static gdouble gtk_rot_ctrl_profile_az(gpointer *data)
                 }
             }
         }
-
-        g_print("Path Profiled... minAz: %f, mazAz: %f, offset: %f\n", minaz, maxaz, offset);
+        //g_print("Path Profiled... minAz: %f, mazAz: %f, offset: %f\n", minaz, maxaz, offset);
     }
     return offset;
 }
@@ -1267,6 +1269,14 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
     // engaged do the calcs, but don't actually command the rotor.
     else if (tracking && !engaged)
     {
+        // Need to profile code to attempt to find a "clean" path
+        // within the physical constraints of the rotator
+        // This requires smoothing of points from one to the next in
+        // both the profiling routine and this function as well.
+        // TODO: investigate why the path is rebuilt so often and
+        // for now, reprofile here every time we update.
+        pthofs = gtk_rot_ctrl_profile_az(ctrl);
+
 
         rotaz = 0.0;
         rotel = 0.0;
@@ -1304,6 +1314,8 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
         ctrl->lastTrgAz = trgaz;
         ctrl->lastTrgEl = trgel;
         ctrl->lastTrgSet = TRUE;
+        // add path optimization offset
+        trgaz += pthofs;
         // always finish the trg values with SAFE_...
         trgaz = SAFE_AZI(trgaz);
         trgel = SAFE_ELE(trgel);
