@@ -66,6 +66,10 @@ struct _gtk_rot_ctrl {
     gboolean        monitor;    /*!< Flag indicating that rig is in monitor mode. */
     gboolean        engaged;    /*!< Flag indicating that rotor device is engaged. */
 
+    gdouble         lastTrgAz;
+    gdouble         lastTrgEl;
+    gboolean        lastTrgSet;
+
     gint            errcnt;     /*!< Error counter. */
 
     /* TCP client to rotctld */
