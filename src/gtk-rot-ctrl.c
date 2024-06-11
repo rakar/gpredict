@@ -733,14 +733,6 @@ static void track_toggle_cb(GtkToggleButton *button, gpointer data)
     gtk_widget_set_sensitive(ctrl->ElSet, !ctrl->tracking);
 }
 
-// This method seems fundamentally flawed,
-// possibly due to overly combining the angle display
-// and rotor control. Displaying 0-360 or -180 - 180 is fine,
-// but sending the rotor to 380 is fine as long as it is
-// within the limits of the rotator
-// Need to find out if paths are created to be as close to
-// zero as possible (but no closer)
-
 /**
  * Set Read Rotor values
  *
@@ -845,7 +837,7 @@ static gboolean gtk_rot_ctrl_get_path(gpointer *data, gdouble *pthaz, gdouble *p
  * \param currAz value to smooth
  * \return Smoothed value
  */
-static gdouble rot_ctrl_smooth(gdouble lastAz, gdouble currAz)
+static gdouble gtk_rot_ctrl_smooth(gdouble lastAz, gdouble currAz)
 {
     gdouble res = currAz;
 
@@ -867,14 +859,14 @@ static gdouble rot_ctrl_smooth(gdouble lastAz, gdouble currAz)
  * \param currAz value to smooth
  * \return Smoothed value
  */
-static gdouble rot_ctrl_smooth_az(gpointer data, gdouble currAz)
+static gdouble gtk_rot_ctrl_smooth_az(gpointer data, gdouble currAz)
 {
     GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
 
     gdouble res = currAz;
     if (ctrl->lastTrgSet)
     {
-        res = rot_ctrl_smooth(ctrl->lastTrgAz, currAz);
+        res = gtk_rot_ctrl_smooth(ctrl->lastTrgAz, currAz);
     }
     return res;
 }
@@ -1012,7 +1004,7 @@ static gdouble gtk_rot_ctrl_profile_az(gpointer *data)
                 {
                     lastaz = detail->az;
                 }
-                smoothaz = rot_ctrl_smooth(lastaz, detail->az);
+                smoothaz = gtk_rot_ctrl_smooth(lastaz, detail->az);
                 if (smoothaz < minaz)
                     minaz = smoothaz;
                 if (smoothaz > maxaz)
@@ -1281,7 +1273,7 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
         rotaz = 0.0;
         rotel = 0.0;
         if (gtk_rot_ctrl_get_path(ctrl, &pthaz, &pthel))
-            pthaz = rot_ctrl_smooth_az(ctrl, pthaz);
+            pthaz = gtk_rot_ctrl_smooth_az(ctrl, pthaz);
         // if we've calculated a target already stay there for now,
         // otherwise use the current smoothed position of the path
         if (ctrl->lastTrgSet)
@@ -1307,7 +1299,7 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
             {
                 gtk_rot_ctrl_calc_future_target(ctrl, pthaz, pthel, &trgaz, &trgel);
             }
-            trgaz = rot_ctrl_smooth_az(ctrl, trgaz);
+            trgaz = gtk_rot_ctrl_smooth_az(ctrl, trgaz);
         }
 
         // Save these values to smooth the next ones when crossing due north
@@ -1378,7 +1370,7 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
         // otherwise use the current smoothed position of the path
         if (gtk_rot_ctrl_get_path(ctrl, &pthaz, &pthel))
         {
-            pthaz = rot_ctrl_smooth_az(ctrl, pthaz);
+            pthaz = gtk_rot_ctrl_smooth_az(ctrl, pthaz);
             if (ctrl->lastTrgSet)
             {
                 trgaz = ctrl->lastTrgAz; // gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->AzSet));
@@ -1402,7 +1394,7 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
                 {
                     gtk_rot_ctrl_calc_future_target(ctrl, pthaz, pthel, &trgaz, &trgel);
                 }
-                trgaz = rot_ctrl_smooth_az(ctrl, trgaz);
+                trgaz = gtk_rot_ctrl_smooth_az(ctrl, trgaz);
             }
             // Save these values to smooth the next ones when crossing due north
             ctrl->lastTrgAz = trgaz;
