@@ -92,6 +92,7 @@ struct _GtkRotCtrlClass {
     GtkBoxClass     parent_class;
 };
 
+
 GType           gtk_rot_ctrl_get_type(void);
 GtkWidget      *gtk_rot_ctrl_new(GtkSatModule * module);
 void            gtk_rot_ctrl_update(GtkRotCtrl * ctrl, gdouble t);

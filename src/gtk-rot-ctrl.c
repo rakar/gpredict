@@ -553,7 +553,7 @@ void gtk_rot_ctrl_update(GtkRotCtrl *ctrl, gdouble t)
                     /* inside an unexpected/unpredicted pass */
                     free_pass(ctrl->pass);
                     ctrl->pass = NULL;
-                    ctrl->lastTrgSet=FALSE;
+                    ctrl->lastTrgSet = FALSE;
                     ctrl->pass = get_current_pass(ctrl->target, ctrl->qth, t);
                     set_flipped_pass(ctrl);
                     gtk_polar_plot_set_pass(GTK_POLAR_PLOT(ctrl->plot),
@@ -571,7 +571,7 @@ void gtk_rot_ctrl_update(GtkRotCtrl *ctrl, gdouble t)
                     /* if the next pass is not the one for the target */
                     free_pass(ctrl->pass);
                     ctrl->pass = NULL;
-                    ctrl->lastTrgSet=FALSE;
+                    ctrl->lastTrgSet = FALSE;
                     ctrl->pass = get_pass(ctrl->target, ctrl->qth, t, 3.0);
                     set_flipped_pass(ctrl);
                     /* update polar plot */
@@ -587,7 +587,7 @@ void gtk_rot_ctrl_update(GtkRotCtrl *ctrl, gdouble t)
                 {
                     free_pass(ctrl->pass);
                     ctrl->pass = NULL;
-                    ctrl->lastTrgSet=FALSE;
+                    ctrl->lastTrgSet = FALSE;
                     ctrl->pass = get_pass(ctrl->target, ctrl->qth, t, 3.0);
                     set_flipped_pass(ctrl);
                     /* update polar plot */
@@ -717,9 +717,8 @@ static GtkWidget *create_el_widgets(GtkRotCtrl *ctrl)
  * \param button Pointer to the GtkToggle button.
  * \param data Pointer to the GtkRotCtrl widget.
  */
-static void track_toggle_cb(GtkToggleButton *button, gpointer data)
+static void track_toggle_cb(GtkToggleButton *button, GtkRotCtrl *ctrl)
 {
-    GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
     gboolean locked;
 
     // Reset the lastTrgAz/El data flag
@@ -741,10 +740,9 @@ static void track_toggle_cb(GtkToggleButton *button, gpointer data)
  * \param rotaz Double Rotor Azimuth
  * \param rotel Double Rotor Elevation
  */
-static void gtk_rot_ctrl_set_read_rotor(gpointer *data, gboolean error, gboolean gotrot,
+static void gtk_rot_ctrl_set_read_rotor(GtkRotCtrl *ctrl, gboolean error, gboolean gotrot,
                                         double rotaz, double rotel, double polrotaz, double polrotel)
 {
-    GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
     gchar *text;
 
     if (error)
@@ -763,6 +761,11 @@ static void gtk_rot_ctrl_set_read_rotor(gpointer *data, gboolean error, gboolean
         text = g_strdup_printf("%.2f\302\260", rotel);
         gtk_label_set_text(GTK_LABEL(ctrl->ElRead), text);
         g_free(text);
+        gtk_polar_plot_set_rotor_pos(GTK_POLAR_PLOT(ctrl->plot),
+                                     polrotaz, polrotel);
+    }
+    else
+    {
         gtk_polar_plot_set_rotor_pos(GTK_POLAR_PLOT(ctrl->plot),
                                      polrotaz, polrotel);
     }
@@ -790,9 +793,8 @@ static gdouble gtk_rot_ctrl_make_pos(gdouble angle)
  * \param pthel pointer to calculated El
  * \return boolean indicating that a point was found
  */
-static gboolean gtk_rot_ctrl_get_path(gpointer *data, gdouble *pthaz, gdouble *pthel)
+static gboolean gtk_rot_ctrl_get_path(GtkRotCtrl *ctrl, gdouble *pthaz, gdouble *pthel)
 {
-    GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
     gboolean gotPath = FALSE;
 
     if (ctrl->target->el < 0.0)
@@ -859,10 +861,8 @@ static gdouble gtk_rot_ctrl_smooth(gdouble lastAz, gdouble currAz)
  * \param currAz value to smooth
  * \return Smoothed value
  */
-static gdouble gtk_rot_ctrl_smooth_az(gpointer data, gdouble currAz)
+static gdouble gtk_rot_ctrl_smooth_az(GtkRotCtrl *ctrl, gdouble currAz)
 {
-    GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
-
     gdouble res = currAz;
     if (ctrl->lastTrgSet)
     {
@@ -891,7 +891,25 @@ static gdouble gtk_rot_ctrl_ring_absdiff(gdouble a, gdouble b)
 }
 
 /**
- * Binary Search for Future Target position that will be roughly Threshold ahead of current position.
+ * Check Threshold
+ * Use Pythag, not perfect but better than individual checks
+ *
+ * \param srcaz point 1 az
+ * \param srcel point 1 el
+ * \param dstaz point 2 az
+ * \param dstel point 2 el
+ * \param threshold threshold
+ * \return are the points within threshold
+ */
+static gboolean is_within_threshold(gdouble srcaz, gdouble srcel, gdouble dstaz, gdouble dstel, gdouble threshold)
+{
+    gdouble diffaz = gtk_rot_ctrl_ring_absdiff(srcaz, dstaz);
+    gdouble diffel = gtk_rot_ctrl_ring_absdiff(srcel, dstel);
+    return (diffaz * diffaz) + (diffel * diffel) < (threshold * threshold);
+}
+
+/**
+ * Binary Search for Future Target position that will be almost Threshold ahead of current position.
  * While this routine follows the original intent, it has been modified to always return a point
  * within threshold. This prevents the nudging behavior that would show up in some cases when the search
  * ended after adding the step (which would generally be too far).
@@ -904,14 +922,11 @@ static gdouble gtk_rot_ctrl_ring_absdiff(gdouble a, gdouble b)
  * \return void
  *
  */
-static void gtk_rot_ctrl_calc_future_target(gpointer *data, gdouble pthaz, gdouble pthel, gdouble *trgaz, gdouble *trgel)
+static void gtk_rot_ctrl_calc_future_target(GtkRotCtrl *ctrl, gdouble pthaz, gdouble pthel, gdouble *trgaz, gdouble *trgel)
 {
-    sat_t sat_working, *sat;
-    /* parameters for path predictions */
     gdouble time_delta;
     gdouble step_size;
-
-    GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
+    sat_t sat_working, *sat;
 
     /* use a working copy so data does not get corrupted */
     sat = memcpy(&(sat_working), ctrl->target, sizeof(sat_t));
@@ -955,13 +970,13 @@ static void gtk_rot_ctrl_calc_future_target(gpointer *data, gdouble pthaz, gdoub
                 sat->az += 180.0;
         }
 
-        if (!((sat->el < 0.0) || (sat->el > 180.0) || (gtk_rot_ctrl_ring_absdiff(pthaz, sat->az) > (ctrl->threshold)) || (fabs(pthel - sat->el) > (ctrl->threshold))))
+        if (((sat->el >= 0.0) && (sat->el <= 180.0) && is_within_threshold(pthaz, pthel, sat->az, sat->el, ctrl->threshold)))
         {
             time_delta += step_size;
         }
         step_size /= 2.0;
-        g_print("iteration time_delta: %f, step_size: %f\n",
-                time_delta, step_size);
+        // g_print("iteration time_delta: %f, step_size: %f\n",
+        //         time_delta, step_size);
     }
     *trgaz = sat->az;
     *trgel = sat->el;
@@ -979,10 +994,8 @@ static void gtk_rot_ctrl_calc_future_target(gpointer *data, gdouble pthaz, gdoub
  * \param data GtkRotCtrl pointer
  * \return optimal offset
  */
-static gdouble gtk_rot_ctrl_profile_az(gpointer *data)
+static gdouble gtk_rot_ctrl_profile_az(GtkRotCtrl *ctrl)
 {
-    GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
-
     gdouble offset = 0.0;
     guint detailLength;
     gdouble lastaz;
@@ -1025,7 +1038,7 @@ static gdouble gtk_rot_ctrl_profile_az(gpointer *data)
                 }
             }
         }
-        //g_print("Path Profiled... minAz: %f, mazAz: %f, offset: %f\n", minaz, maxaz, offset);
+        // g_print("Path Profiled... minAz: %f, mazAz: %f, offset: %f\n", minaz, maxaz, offset);
     }
     return offset;
 }
@@ -1076,28 +1089,17 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
 {
     GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
 
-    gdouble setaz = 0.0, setel = 45.0;
     gdouble rotaz = 0.0, rotel = 0.0;       // Rotor Actual
-    gdouble pthaz = 0.0, pthel = 0.0;       // Satellite or knobs
-    gdouble trgaz = 0.0, trgel = 0.0;       // Target location s/b within margin
-    gdouble dspaz = 0.0, dspel = 0.0;       // Display version of target
-    gdouble polsataz = 0.0, polsatel = 0.0; // Polar Satellite if tracking (polar values must be >0)
-    gdouble polrotaz = 0.0, polrotel = 0.0; // Polar Rotor actual
-    gdouble poltrgaz = 0.0, poltrgel = 0.0; // Polar Target
+    gdouble pthaz = 0.0, pthel = 0.0;       // Satellite or Knob location
+    gdouble trgaz = 0.0, trgel = 0.0;       // Rotor Target location s/b within threshold
+    gdouble dspaz = 0.0, dspel = 0.0;       // Rotor Target Display value based on Az Type
+    gdouble polsataz = 0.0, polsatel = 0.0; // Polar Satellite location
+    gdouble polrotaz = 0.0, polrotel = 0.0; // Polar Rotor Actual location
+    gdouble poltrgaz = 0.0, poltrgel = 0.0; // Polar Rotor Target location
 
-    gdouble pthofs = 0.0; // offset of path positions to fit entire path within rotor config
-
-    gboolean tracking, engaged;
-
-    gchar *text;
+    gboolean tracking = FALSE, engaged = FALSE;
     gboolean error = FALSE;
     gboolean gotrot = FALSE;
-    sat_t sat_working, *sat;
-    gint watchdog;
-
-    /* parameters for path predictions */
-    gdouble time_delta;
-    gdouble step_size;
 
 #define SAFE_AZI(azi) CLAMP(azi, ctrl->conf->minaz, ctrl->conf->maxaz)
 #define SAFE_ELE(ele) CLAMP(ele, ctrl->conf->minel, ctrl->conf->maxel)
@@ -1111,14 +1113,14 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
     - Separating the display functions related to AzType
       from targetting functions
     - Optimizing rotor control when there are multiple
-      path options at different 360 degree intervals
+      valid path options at different 360 degree intervals
     Side Goals:
     - Add a new Az Type "Raw" that shows Az without
       clamping it to 0 to 360 or -180 to 180.
     - Clarify code for future development.
 
-    Code length and reduncancy were not considered to be important
-     vs. clear stable functionallity.
+    Code length and reduncancy were not considered to be
+    important factors vs. clear stable functionallity.
     */
 
     // These variables are used to deterimine which
@@ -1132,71 +1134,15 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
     // For clarity, this code has been written mode by mode.
     // Despite being longer I hope the code will be much
     // more readable, understandable, and maintainable.
-    // I expect that this might merge back over time.
+    // I expect that this might merge back together over time.
 
-    // Not Tracking/Not Engaged
-    // The knobs values define the path position and the rotor
-    // should target directly where the knobs indicate.
-    if (!tracking && !engaged)
+    // Get rotor position if engaged...
+    rotaz = 0.0;
+    rotel = 0.0;
+    polrotaz = -10.0;
+    polrotel = -10.0;
+    if (engaged)
     {
-        // if not tracking a target, just get knobs
-        // and we're basically done
-        rotaz = 0.0;
-        rotel = 0.0;
-        // Not tracking so get the knob values
-        pthaz = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->AzSet));
-        pthel = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->ElSet));
-        // Not tracking so target straight at the knob settings
-        trgaz = pthaz;
-        trgel = pthel;
-        // Save these values to smooth the next ones when crossing due north
-        ctrl->lastTrgAz = trgaz;
-        ctrl->lastTrgEl = trgel;
-        ctrl->lastTrgSet = TRUE;
-        // always finish the trg values with SAFE_...
-        trgaz = SAFE_AZI(trgaz);
-        trgel = SAFE_ELE(trgel);
-        // format the display values based on AzType
-        gtk_rot_ctrl_prep_dsp(trgaz, trgel, ctrl->conf->aztype, &dspaz, &dspel);
-        // don't display the sat, since we're not tracking
-        polsataz = -10.0;
-        polsatel = -10.0;
-        // don't display the rotor, since we're not engaged
-        polrotaz = -10.0;
-        polrotel = -10.0;
-        // negative values don't get displayed, so make sure they are positive
-        poltrgaz = gtk_rot_ctrl_make_pos(trgaz);
-        poltrgel = gtk_rot_ctrl_make_pos(trgel);
-
-        // Don't set knobs
-        // gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->AzSet), dspaz);
-        // gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->ElSet), dspel);
-
-        // handle rotor "read" values and polar display (false,false will not display either)
-        gtk_rot_ctrl_set_read_rotor(ctrl, error, gotrot, rotaz, rotel, polrotaz, polrotel);
-        // set Satellite pos
-        gtk_polar_plot_set_target_pos(GTK_POLAR_PLOT(ctrl->plot), polsataz, polsatel);
-        // set Target pos
-        gtk_polar_plot_set_ctrl_pos(GTK_POLAR_PLOT(ctrl->plot), poltrgaz, poltrgel);
-
-        // Don't command rotor because we're not engaged
-        // if (g_mutex_trylock(&ctrl->client.mutex))
-        // {
-        //     ctrl->client.azi_out = trgaz;
-        //     ctrl->client.ele_out = trgaz;
-        //     ctrl->client.new_trg = TRUE;
-        //     g_mutex_unlock(&ctrl->client.mutex);
-        // }
-    }
-    // The knobs values define the path position and the rotor
-    // should target directly where the knobs indicate.
-    else if (!tracking && engaged)
-    {
-        // if not tracking a target, just get knobs
-        // and manage Rotor (since were not tracking, target knob value exactly)
-        rotaz = 0.0;
-        rotel = 0.0;
-        // get the current rotor position
         gotrot = g_mutex_trylock(&ctrl->client.mutex);
         if (gotrot)
         {
@@ -1204,8 +1150,20 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
             rotaz = ctrl->client.azi_in;
             rotel = ctrl->client.ele_in;
             g_mutex_unlock(&ctrl->client.mutex);
-        }
 
+            if (!error)
+            {
+                polrotaz = gtk_rot_ctrl_make_pos(rotaz);
+                polrotel = gtk_rot_ctrl_make_pos(rotel);
+            }
+        }
+    }
+
+    // Not Tracking/Not Engaged
+    // The knob values define the path position and the rotor
+    // should target directly where the knobs indicate.
+    if (!tracking && !engaged)
+    {
         // Not tracking so get the knob values
         pthaz = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->AzSet));
         pthel = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->ElSet));
@@ -1224,36 +1182,33 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
         // don't display the sat, since we're not tracking
         polsataz = -10.0;
         polsatel = -10.0;
-        // if we successfully got rotor data, display it
-        polrotaz = -10.0;
-        polrotel = -10.0;
-        if (!error && gotrot)
-        {
-            polrotaz = gtk_rot_ctrl_make_pos(rotaz);
-            polrotel = gtk_rot_ctrl_make_pos(rotel);
-        }
-        // negative values don't get displayed, so make sure they are positive
         poltrgaz = gtk_rot_ctrl_make_pos(trgaz);
         poltrgel = gtk_rot_ctrl_make_pos(trgel);
-
-        // Don't set knobs because they didn't change.
-        // gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->AzSet), dspaz);
-        // gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->ElSet), dspel);
-
-        // handle rotor "read" values and polar display (false,false will not display either)
-        gtk_rot_ctrl_set_read_rotor(ctrl, error, gotrot, rotaz, rotel, polrotaz, polrotel);
-        // set Satellite pos
-        gtk_polar_plot_set_target_pos(GTK_POLAR_PLOT(ctrl->plot), polsataz, polsatel);
-        // set Target pos
-        gtk_polar_plot_set_ctrl_pos(GTK_POLAR_PLOT(ctrl->plot), poltrgaz, poltrgel);
-        // Command rotor because we're engaged
-        if (g_mutex_trylock(&ctrl->client.mutex))
-        {
-            ctrl->client.azi_out = trgaz;
-            ctrl->client.ele_out = trgaz;
-            ctrl->client.new_trg = TRUE;
-            g_mutex_unlock(&ctrl->client.mutex);
-        }
+    }
+    // The knobs values define the path position and the rotor
+    // should target directly where the knobs indicate.
+    else if (!tracking && engaged)
+    {
+        // Not tracking so get the knob values
+        pthaz = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->AzSet));
+        pthel = gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->ElSet));
+        // Not tracking so target straight at the knob settings
+        trgaz = pthaz;
+        trgel = pthel;
+        // Save these values to smooth the next ones when crossing due north
+        ctrl->lastTrgAz = trgaz;
+        ctrl->lastTrgEl = trgel;
+        ctrl->lastTrgSet = TRUE;
+        // always finish the trg values with SAFE_...
+        trgaz = SAFE_AZI(trgaz);
+        trgel = SAFE_ELE(trgel);
+        // format the display values based on AzType
+        gtk_rot_ctrl_prep_dsp(trgaz, trgel, ctrl->conf->aztype, &dspaz, &dspel);
+        // don't display the sat, since we're not tracking
+        polsataz = -10.0;
+        polsatel = -10.0;
+        poltrgaz = gtk_rot_ctrl_make_pos(trgaz);
+        poltrgel = gtk_rot_ctrl_make_pos(trgel);
     }
     // We're tracking so we're driven by the path. Move the rotor
     // when we are outside the threshold and target a spot "threshold distance"
@@ -1261,120 +1216,15 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
     // engaged do the calcs, but don't actually command the rotor.
     else if (tracking && !engaged)
     {
-        // Need to profile code to attempt to find a "clean" path
-        // within the physical constraints of the rotator
-        // This requires smoothing of points from one to the next in
-        // both the profiling routine and this function as well.
-        // TODO: investigate why the path is rebuilt so often and
-        // for now, reprofile here every time we update.
-        pthofs = gtk_rot_ctrl_profile_az(ctrl);
-
-
-        rotaz = 0.0;
-        rotel = 0.0;
-        if (gtk_rot_ctrl_get_path(ctrl, &pthaz, &pthel))
-            pthaz = gtk_rot_ctrl_smooth_az(ctrl, pthaz);
-        // if we've calculated a target already stay there for now,
-        // otherwise use the current smoothed position of the path
-        if (ctrl->lastTrgSet)
-        {
-            trgaz = ctrl->lastTrgAz;
-            trgel = ctrl->lastTrgEl;
-        }
-        else
-        {
-            trgaz = pthaz;
-            trgel = pthel;
-        }
-        // if we're beyond the threshold and within AOS and LOS,
-        // calculate position along path threshold distance ahead of satellite.
-        if ((gtk_rot_ctrl_ring_absdiff(pthaz, trgaz) > (ctrl->threshold)) || (fabs(pthel - trgel) > ctrl->threshold))
-        {
-            if (ctrl->target->el < 0.0)
-            {
-                trgaz = pthaz;
-                trgel = pthel;
-            }
-            else
-            {
-                gtk_rot_ctrl_calc_future_target(ctrl, pthaz, pthel, &trgaz, &trgel);
-            }
-            trgaz = gtk_rot_ctrl_smooth_az(ctrl, trgaz);
-        }
-
-        // Save these values to smooth the next ones when crossing due north
-        ctrl->lastTrgAz = trgaz;
-        ctrl->lastTrgEl = trgel;
-        ctrl->lastTrgSet = TRUE;
-        // add path optimization offset
-        trgaz += pthofs;
-        // always finish the trg values with SAFE_...
-        trgaz = SAFE_AZI(trgaz);
-        trgel = SAFE_ELE(trgel);
-        // format the display values based on AzType
-        gtk_rot_ctrl_prep_dsp(trgaz, trgel, ctrl->conf->aztype, &dspaz, &dspel);
-        polsataz = gtk_rot_ctrl_make_pos(pthaz);
-        polsatel = gtk_rot_ctrl_make_pos(pthel);
-        polrotaz = -10.0;
-        polrotel = -10.0;
-        poltrgaz = gtk_rot_ctrl_make_pos(trgaz);
-        poltrgel = gtk_rot_ctrl_make_pos(trgel);
-        // g_print("rot_ctrl_timeout poltrgaz: %f, poltrgel: %f\n", poltrgaz, poltrgel);
-
-        // Set knobs because they are not in control
-        gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->AzSet), dspaz);
-        gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->ElSet), dspel);
-
-        // handle rotor "read" values and polar display (false,false will not display either)
-        gtk_rot_ctrl_set_read_rotor(ctrl, error, gotrot, rotaz, rotel, polrotaz, polrotel);
-
-        // set Satellite pos
-        gtk_polar_plot_set_target_pos(GTK_POLAR_PLOT(ctrl->plot), polsataz, polsatel);
-        // set Target pos
-        gtk_polar_plot_set_ctrl_pos(GTK_POLAR_PLOT(ctrl->plot), poltrgaz, poltrgel);
-
-        // Command rotor because we're not engaged
-        // if (g_mutex_trylock(&ctrl->client.mutex))
-        // {
-        //     ctrl->client.azi_out = trgaz;
-        //     ctrl->client.ele_out = trgaz;
-        //     ctrl->client.new_trg = TRUE;
-        //     g_mutex_unlock(&ctrl->client.mutex);
-        // }
-    }
-    else if (tracking && engaged)
-    {
-        // Need to profile code to attempt to find a "clean" path
-        // within the physical constraints of the rotator
-        // This requires smoothing of points from one to the next in
-        // both the profiling routine and this function as well.
-        // TODO: investigate why the path is rebuilt so often and
-        // for now, reprofile here every time we update.
-        pthofs = gtk_rot_ctrl_profile_az(ctrl);
-
-        // if tracking a target the fun is just beginning
-        rotaz = 0.0;
-        rotel = 0.0;
-
-        // get the current rotor position
-        gotrot = g_mutex_trylock(&ctrl->client.mutex);
-        if (gotrot)
-        {
-            error = ctrl->client.io_error;
-            rotaz = ctrl->client.azi_in;
-            rotel = ctrl->client.ele_in;
-            g_mutex_unlock(&ctrl->client.mutex);
-        }
-
-        // if we've calculated a target already stay there for now,
-        // otherwise use the current smoothed position of the path
         if (gtk_rot_ctrl_get_path(ctrl, &pthaz, &pthel))
         {
             pthaz = gtk_rot_ctrl_smooth_az(ctrl, pthaz);
+            // if we've calculated a target already stay there for now,
+            // otherwise use the current smoothed position of the path
             if (ctrl->lastTrgSet)
             {
-                trgaz = ctrl->lastTrgAz; // gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->AzSet));
-                trgel = ctrl->lastTrgEl; // gtk_rot_knob_get_value(GTK_ROT_KNOB(ctrl->ElSet));
+                trgaz = ctrl->lastTrgAz;
+                trgel = ctrl->lastTrgEl;
             }
             else
             {
@@ -1383,7 +1233,62 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
             }
             // if we're beyond the threshold and within AOS and LOS,
             // calculate position along path threshold distance ahead of satellite.
-            if ((gtk_rot_ctrl_ring_absdiff(pthaz, trgaz) > (ctrl->threshold)) || (fabs(pthel - trgel) > ctrl->threshold))
+            if (!is_within_threshold(pthaz, pthel, trgaz, trgel, ctrl->threshold))
+            {
+                if (ctrl->target->el < 0.0)
+                {
+                    trgaz = pthaz;
+                    trgel = pthel;
+                }
+                else
+                {
+                    gtk_rot_ctrl_calc_future_target(ctrl, pthaz, pthel, &trgaz, &trgel);
+                }
+                trgaz = gtk_rot_ctrl_smooth_az(ctrl, trgaz);
+            }
+
+            // Save these values to smooth the next ones when crossing due north
+            ctrl->lastTrgAz = trgaz;
+            ctrl->lastTrgEl = trgel;
+            ctrl->lastTrgSet = TRUE;
+            // Need to profile code to attempt to find a "clean" path
+            // within the physical constraints of the rotator
+            // This requires smoothing of points from one to the next in
+            // both the profiling routine and this function as well.
+            // TODO: investigate why the path is rebuilt so often but
+            // for now, reprofile here every time we update.
+            trgaz += gtk_rot_ctrl_profile_az(ctrl);
+            // always finish the trg values with SAFE_...
+            trgaz = SAFE_AZI(trgaz);
+            trgel = SAFE_ELE(trgel);
+            // format the display values based on AzType
+            gtk_rot_ctrl_prep_dsp(trgaz, trgel, ctrl->conf->aztype, &dspaz, &dspel);
+            polsataz = gtk_rot_ctrl_make_pos(pthaz);
+            polsatel = gtk_rot_ctrl_make_pos(pthel);
+            poltrgaz = gtk_rot_ctrl_make_pos(trgaz);
+            poltrgel = gtk_rot_ctrl_make_pos(trgel);
+        }
+    }
+    else if (tracking && engaged)
+    {
+        // if we've calculated a target already stay there for now,
+        // otherwise use the current smoothed position of the path
+        if (gtk_rot_ctrl_get_path(ctrl, &pthaz, &pthel))
+        {
+            pthaz = gtk_rot_ctrl_smooth_az(ctrl, pthaz);
+            if (ctrl->lastTrgSet)
+            {
+                trgaz = ctrl->lastTrgAz;
+                trgel = ctrl->lastTrgEl;
+            }
+            else
+            {
+                trgaz = pthaz;
+                trgel = pthel;
+            }
+            // if we're beyond the threshold and within AOS and LOS,
+            // calculate position along path threshold distance ahead of satellite.
+            if (!is_within_threshold(pthaz, pthel, trgaz, trgel, ctrl->threshold))
             {
                 if (ctrl->target->el < 0.0)
                 {
@@ -1400,50 +1305,45 @@ static gboolean rot_ctrl_timeout_cb(gpointer data)
             ctrl->lastTrgAz = trgaz;
             ctrl->lastTrgEl = trgel;
             ctrl->lastTrgSet = TRUE;
-            // add path optimization offset
-            trgaz += pthofs;
+            // Need to profile code to attempt to find a "clean" path
+            // within the physical constraints of the rotator
+            // This requires smoothing of points from one to the next in
+            // both the profiling routine and this function as well.
+            // TODO: investigate why the path is rebuilt so often but
+            // for now, reprofile here every time we update.
+            trgaz += gtk_rot_ctrl_profile_az(ctrl);
             // always finish the trg values with SAFE_...
             trgaz = SAFE_AZI(trgaz);
             trgel = SAFE_ELE(trgel);
             // format the display values based on AzType
             gtk_rot_ctrl_prep_dsp(trgaz, trgel, ctrl->conf->aztype, &dspaz, &dspel);
-            // negative values don't display, so make them positive
             polsataz = gtk_rot_ctrl_make_pos(pthaz);
             polsatel = gtk_rot_ctrl_make_pos(pthel);
-            // if we successfully got rotor data, display it
-            polrotaz = -10.0;
-            polrotel = -10.0;
-            if (!error && gotrot)
-            {
-                polrotaz = gtk_rot_ctrl_make_pos(rotaz);
-                polrotel = gtk_rot_ctrl_make_pos(rotel);
-            }
             poltrgaz = gtk_rot_ctrl_make_pos(trgaz);
             poltrgel = gtk_rot_ctrl_make_pos(trgel);
-
-            // Set knobs because they are not in control
-            gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->AzSet), dspaz);
-            gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->ElSet), dspel);
-            // handle rotor "read" values and polar display (false,false will not display either)
-            gtk_rot_ctrl_set_read_rotor(ctrl, error, gotrot, rotaz, rotel, polrotaz, polrotel);
-            // set Satellite pos
-            gtk_polar_plot_set_target_pos(GTK_POLAR_PLOT(ctrl->plot), polsataz, polsatel);
-            // set Target pos
-            gtk_polar_plot_set_ctrl_pos(GTK_POLAR_PLOT(ctrl->plot), poltrgaz, poltrgel);
-            // Command rotor because we're engaged
-            if (g_mutex_trylock(&ctrl->client.mutex))
-            {
-                ctrl->client.azi_out = trgaz;
-                ctrl->client.ele_out = trgaz;
-                ctrl->client.new_trg = TRUE;
-                g_mutex_unlock(&ctrl->client.mutex);
-            }
         }
     }
-    else // error
+
+    // Output Calculated values
+    if (tracking)
     {
-        // for future development...
+        gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->AzSet), dspaz);
+        gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->ElSet), dspel);
     }
+    // handle rotor "read" values and polar display (false,false will not display either)
+    gtk_rot_ctrl_set_read_rotor(ctrl, error, gotrot, rotaz, rotel, polrotaz, polrotel);
+    // set Satellite pos
+    gtk_polar_plot_set_target_pos(GTK_POLAR_PLOT(ctrl->plot), polsataz, polsatel);
+    // set Target pos
+    gtk_polar_plot_set_ctrl_pos(GTK_POLAR_PLOT(ctrl->plot), poltrgaz, poltrgel);
+    if (engaged && g_mutex_trylock(&ctrl->client.mutex))
+    {
+        ctrl->client.azi_out = trgaz;
+        ctrl->client.ele_out = trgaz;
+        ctrl->client.new_trg = TRUE;
+        g_mutex_unlock(&ctrl->client.mutex);
+    }
+
     return TRUE;
 }
 
