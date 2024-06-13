@@ -1816,6 +1816,7 @@ static void gtk_rot_ctrl_init(GtkRotCtrl *ctrl,
     ctrl->errcnt = 0;
     ctrl->lastTrgAz = 0;
     ctrl->lastTrgEl = 0;
+    ctrl->lastTrgSet = FALSE;
 
     g_mutex_init(&ctrl->client.mutex);
     ctrl->client.thread = NULL;
