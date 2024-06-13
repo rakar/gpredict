@@ -32,10 +32,10 @@ struct _gtk_rot_ctrl {
     GtkBox          box;
 
     /* Azimuth widgets */
-    GtkWidget      *AzSat, *AzSet, *AzRead, *AzDevSel;
+    GtkWidget      *AzSat, *AzSet, *AzRead, *AzReadPretty, *AzDevSel;
 
     /* Elevation widgets */
-    GtkWidget      *ElSat, *ElSet, *ElRead, *ElDevSel, *ElDev;
+    GtkWidget      *ElSat, *ElSet, *ElRead, *ElReadPretty, *ElDevSel, *ElDev;
 
     /* other widgets */
     GtkWidget      *SatSel;
