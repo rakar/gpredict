@@ -124,7 +124,8 @@ static void button_clicked_cb(GtkWidget * button, gpointer data)
         knob->value += delta;
     }
 
-    g_idle_add((GSourceFunc) gtk_freq_knob_update, knob);
+    //g_idle_add((GSourceFunc) gtk_freq_knob_update, knob);
+    gtk_freq_knob_update(knob);
 
     /* emit "freq_changed" signal */
     g_signal_emit(G_OBJECT(data), freq_changed_signal, 0);
@@ -273,7 +274,8 @@ void gtk_freq_knob_set_value(GtkFreqKnob * knob, gdouble val)
     if ((val >= knob->min) && (val <= knob->max))
     {
         knob->value = val;
-        g_idle_add((GSourceFunc) gtk_freq_knob_update, knob);
+        //g_idle_add((GSourceFunc) gtk_freq_knob_update, knob);
+        gtk_freq_knob_update(knob);
     }
 }
 
@@ -417,7 +419,8 @@ GtkWidget      *gtk_freq_knob_new(gdouble val, gboolean buttons)
     gtk_label_set_markup(GTK_LABEL(label), "<span size='xx-large'> Hz</span>");
     gtk_grid_attach(GTK_GRID(table), label, 13, 1, 1, 1);
 
-    g_idle_add((GSourceFunc) gtk_freq_knob_update, knob);
+    //g_idle_add((GSourceFunc) gtk_freq_knob_update, knob);
+    gtk_freq_knob_update(knob);
 
     gtk_container_add(GTK_CONTAINER(widget), table);
     gtk_widget_show_all(widget);
