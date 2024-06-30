@@ -1056,6 +1056,7 @@ static gdouble gtk_rot_ctrl_profile_az(GtkRotCtrl *ctrl, gdouble sampleAz)
     gdouble minaz = 10000, maxaz = -10000;
     gdouble offsets[3] = {-360, 0, 360};
     gdouble maxstretch = 10000.0;
+    gboolean firstAz = TRUE;
 
     if (ctrl->pass != NULL)
     {
@@ -1065,15 +1066,18 @@ static gdouble gtk_rot_ctrl_profile_az(GtkRotCtrl *ctrl, gdouble sampleAz)
             detail = PASS_DETAIL(g_slist_nth_data(ctrl->pass->details, i));
             if (detail != NULL)
             {
-                if (i == 0)
+                if (firstAz)
                 {
                     lastaz = detail->az;
+                    firstAz = FALSE;
                 }
                 smoothaz = gtk_rot_ctrl_smooth(lastaz, detail->az);
                 if (smoothaz < minaz)
                     minaz = smoothaz;
                 if (smoothaz > maxaz)
                     maxaz = smoothaz;
+                //g_print("path point lastaz: %f, detail->az: %f, smoothaz: %f, minaz: %f, maxaz: %f, sampleaz: %f\n",lastaz,detail->az,smoothaz,minaz,maxaz,sampleAz);  
+                lastaz = smoothaz;    
             }
         }
         while (sampleAz < minaz)
@@ -1100,7 +1104,7 @@ static gdouble gtk_rot_ctrl_profile_az(GtkRotCtrl *ctrl, gdouble sampleAz)
                 }
             }
         }
-        // g_print("Path Profiled... minAz: %f, mazAz: %f, offset: %f\n", minaz, maxaz, offset);
+        //g_print("Path Profiled... minAz: %f, mazAz: %f, maxstretch: %f, offset: %f\n", minaz, maxaz, maxstretch, offset);
     }
     return offset;
 }

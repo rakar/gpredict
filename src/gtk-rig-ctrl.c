@@ -2452,7 +2452,7 @@ static gboolean set_freq_toggle(GtkRigCtrl * ctrl, gint sock, gdouble freq)
     gboolean        retcode;
 
     /* send command */
-    printf("set_freq_toggle %d\n", ctrl->conf->vfo_opt);
+    //printf("set_freq_toggle %d\n", ctrl->conf->vfo_opt);
     if (ctrl->conf->vfo_opt)
         buff = g_strdup_printf("I VFOA %10.0f\x0a", freq);
     else
