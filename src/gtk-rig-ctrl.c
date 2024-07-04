@@ -1003,7 +1003,9 @@ static void rig_engaged_cb(GtkToggleButton * button, gpointer data)
         ctrl->rigctl_thread = g_thread_new("rigctl_run", rigctl_run, ctrl);
         setconfig(ctrl);
     }
-    ctrl->conf2 = NULL;
+    // this will cause the second radio to fail (not get updated)
+    // reported as bug #355 in the csete repo
+    // ctrl->conf2 = NULL;
 }
 
 static GtkWidget *create_target_widgets(GtkRigCtrl * ctrl)
