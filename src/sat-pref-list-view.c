@@ -178,7 +178,7 @@ GtkWidget      *sat_pref_list_view_create(GKeyFile * cfg)
     label = gtk_label_new(NULL);
     g_object_set(label, "xalign", 0.0, "yalign", 0.5, NULL);
     gtk_label_set_markup(GTK_LABEL(label), _("<b>Visible Fields:</b>"));
-    gtk_grid_attach(GTK_GRID(table), label, 0, 0, 2, 1);
+    gtk_grid_attach(GTK_GRID(table), label, 0, 0, 3, 1);
 
     /* add fields except the last one (bold) */
     for (i = 0; i < SAT_LIST_COL_NUMBER - 1; i++)

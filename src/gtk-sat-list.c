@@ -74,6 +74,7 @@ const gchar    *SAT_LIST_COL_TITLE[SAT_LIST_COL_NUMBER] = {
     N_("Vis"),
     N_("Decayed"),
     N_("Status"),
+    N_("MaxEl"),
     N_("BOLD")                  /* should never be seen */
 };
 
@@ -107,6 +108,7 @@ const gchar    *SAT_LIST_COL_HINT[SAT_LIST_COL_NUMBER] = {
     N_("Visibility"),
     N_("Decayed"),
     N_("Operational Status"),
+    N_("Maximum Elev"),
     N_("---")
 };
 
@@ -137,6 +139,7 @@ const gfloat    SAT_LIST_COL_XALIGN[SAT_LIST_COL_NUMBER] = {
     1.0,                        // orbit
     0.5,                        // visibility
     0.0,                        // Operational Status
+    1.0,                        // Max Elevation
 };
 
 static void     gtk_sat_list_class_init(GtkSatListClass * class,
@@ -461,6 +464,7 @@ static GtkTreeModel *create_and_fill_model(GHashTable * sats)
                                    G_TYPE_STRING,       // visibility
                                    G_TYPE_BOOLEAN,      // decay
                                    G_TYPE_INT,       // Operational Status
+                                   G_TYPE_DOUBLE,       // max el
                                    G_TYPE_INT   // weight/bold
         );
 
@@ -508,7 +512,9 @@ static void sat_list_add_satellites(gpointer key, gpointer value,
                        SAT_LIST_COL_PHASE, sat->phase,
                        SAT_LIST_COL_ORBIT, sat->orbit, 
                        SAT_LIST_COL_STAT_OPERATIONAL, (char *) sat->tle.status,
-                       SAT_LIST_COL_DECAY, !decayed(sat), -1);
+                       SAT_LIST_COL_DECAY, !decayed(sat),
+                       SAT_LIST_COL_MAXEL, sat->max_el,
+                        -1);
 }
 
 /** Update satellites */
@@ -618,6 +624,7 @@ static gboolean sat_list_update_sats(GtkTreeModel * model, GtkTreePath * path,
                            SAT_LIST_COL_PHASE, sat->phase,
                            SAT_LIST_COL_ORBIT, sat->orbit,
                            SAT_LIST_COL_DECAY, !decayed(sat),
+                           SAT_LIST_COL_MAXEL, sat->max_el,
                            SAT_LIST_COL_BOLD,
                            (sat->el >
                             0.0) ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
@@ -750,7 +757,8 @@ static gboolean sat_list_update_sats(GtkTreeModel * model, GtkTreePath * path,
             gchar          *alstr;
 
 
-            if (sat->aos > sat->los)
+            //if (sat->aos > sat->los)
+            if (sat->calc_time>sat->aos)
             {
                 /* next event is LOS */
                 number = sat->los;
@@ -823,6 +831,7 @@ static void check_and_set_cell_renderer(GtkTreeViewColumn * column,
     case SAT_LIST_COL_DEC:
     case SAT_LIST_COL_MA:
     case SAT_LIST_COL_PHASE:
+    case SAT_LIST_COL_MAXEL:
         gtk_tree_view_column_set_cell_data_func(column,
                                                 renderer,
                                                 degree_cell_data_function,

@@ -189,6 +189,8 @@ typedef struct {
     double          meanmo;     /*!< mean motion kept in rev/day */
     long            orbit;      /*!< orbit number */
     orbit_type_t    otype;      /*!< orbit type. */
+    double          max_el;     /*!< max el durring next pass */
+    double          calc_time;  /*!< aos/los/orbit/max_el calculation time*/
 } sat_t;
 
 

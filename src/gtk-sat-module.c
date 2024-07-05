@@ -700,6 +700,34 @@ static void gtk_sat_module_update_sat(gpointer key, gpointer val,
         sat->los = find_los(sat, module->qth, daynum, maxdt);
 
     predict_calc(sat, module->qth, daynum);
+
+    // get aos/los (maxaz) from the first qualified path
+    // otherwise aos/los/orbit won't match "next pass"
+    {
+        GSList         *passes = NULL;
+        guint           n;
+        pass_t         *tmppass = NULL;
+
+        passes = get_passes(sat, module->qth, daynum, maxdt, 1);
+        n = g_slist_length(passes);
+        // sat_log_log(SAT_LOG_LEVEL_DEBUG,
+        //             _("%s:%d: %s has %d passes within %.4f days\n"),
+        //             __FILE__, __LINE__, sat->nickname, n, maxdt);
+
+        if (passes != NULL)
+        {
+            if (n>=1)
+            {
+                /* add pass items */
+                tmppass = (pass_t *) g_slist_nth_data(passes, 0);
+                sat->aos = tmppass->aos;
+                sat->los = tmppass->los;
+                sat->orbit = tmppass->orbit;
+                sat->max_el = tmppass->max_el;  
+            }
+        }
+        sat->calc_time = daynum;         
+    }    
 }
 
 /** Module timeout callback. */
