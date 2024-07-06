@@ -626,8 +626,8 @@ static gboolean sat_list_update_sats(GtkTreeModel * model, GtkTreePath * path,
                            SAT_LIST_COL_DECAY, !decayed(sat),
                            SAT_LIST_COL_MAXEL, sat->max_el,
                            SAT_LIST_COL_BOLD,
-                           (sat->el >
-                            0.0) ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
+                           //(sat->el > 0.0) ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
+                           (sat->calc_time > sat->aos && sat->calc_time < sat->los) ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
                            -1);
 
         /* doppler shift @ 100 MHz */

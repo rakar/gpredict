@@ -459,7 +459,7 @@ gchar          *pass_to_txt_tblcontents(pass_t * pass, qth_t * qth,
 }
 
 gchar          *passes_to_txt_pgheader(GSList * passes, qth_t * qth,
-                                       gint fields)
+                                       gint fields, gboolean multisat)
 {
     gchar          *header;
     pass_t         *pass;
@@ -468,11 +468,21 @@ gchar          *passes_to_txt_pgheader(GSList * passes, qth_t * qth,
 
     pass = PASS(g_slist_nth_data(passes, 0));
 
-    header = g_strdup_printf(_("Upcoming passes for %s\n"
+    if (multisat) 
+    {
+        header = g_strdup_printf(_("Observer: %s, %s\n"
+                               "LAT:%.2f LON:%.2f\n"),
+                             qth->name, qth->loc,
+                             qth->lat, qth->lon);
+    }
+    else 
+    {
+        header = g_strdup_printf(_("Upcoming passes for %s\n"
                                "Observer: %s, %s\n"
                                "LAT:%.2f LON:%.2f\n"),
                              pass->satname, qth->name, qth->loc,
                              qth->lat, qth->lon);
+    }
 
     return header;
 }
@@ -502,7 +512,7 @@ gchar          *passes_to_txt_tblheader(GSList * passes, qth_t * qth,
     /* add AOS, TCA, and LOS columns */
     buff = g_strnfill(size - 3, ' ');
     line =
-        g_strconcat(_(MPCT[0]), buff, _(MPCT[1]), buff, _(MPCT[2]), buff,
+        g_strconcat(_("SATELLITE      "),_(MPCT[0]), buff, _(MPCT[1]), buff, _(MPCT[2]), buff,
                     NULL);
     linelength = 3 * (size + 2);
     g_free(buff);
@@ -562,7 +572,7 @@ gchar          *passes_to_txt_tblcontents(GSList * passes, qth_t * qth,
         /* AOS */
         daynum_to_str(tbuff, TIME_FORMAT_MAX_LENGTH, fmtstr, pass->aos);
 
-        line = g_strdup_printf(" %s", tbuff);
+        line = g_strdup_printf("%-15.15s %s", pass->satname, tbuff);
 
         /* TCA */
         daynum_to_str(tbuff, TIME_FORMAT_MAX_LENGTH, fmtstr, pass->tca);

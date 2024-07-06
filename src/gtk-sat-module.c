@@ -701,7 +701,7 @@ static void gtk_sat_module_update_sat(gpointer key, gpointer val,
 
     predict_calc(sat, module->qth, daynum);
 
-    // get aos/los (maxaz) from the first qualified path
+    // get aos/los (maxaz) from the first qualified pass
     // otherwise aos/los/orbit won't match "next pass"
     {
         GSList         *passes = NULL;
@@ -726,7 +726,8 @@ static void gtk_sat_module_update_sat(gpointer key, gpointer val,
                 sat->max_el = tmppass->max_el;  
             }
         }
-        sat->calc_time = daynum;         
+        sat->calc_time = daynum;  
+        free_passes(passes);       
     }    
 }
 

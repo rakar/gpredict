@@ -47,7 +47,7 @@ static void     save_pass_exec(GtkWidget * parent,
 static void     save_passes_exec(GtkWidget * parent,
                                  GSList * passes, qth_t * qth,
                                  const gchar * savedir, const gchar * savefile,
-                                 gint format, gint contents);
+                                 gint format, gint contents, gboolean multisat);
 static void     save_to_file(GtkWidget * parent, const gchar * fname,
                              const gchar * data);
 
@@ -241,11 +241,24 @@ void save_passes(GtkWidget * parent)
     gchar          *savedir = NULL;
     gchar          *savefile;
     gint            cont;
+    pass_t         *firstpass=NULL ,*lastpass=NULL;
+    gboolean        multisat = FALSE;  
+    gint            passcount;
 
     /* get data attached to parent */
     sat = (gchar *) g_object_get_data(G_OBJECT(parent), "sat");
     qth = (qth_t *) g_object_get_data(G_OBJECT(parent), "qth");
     passes = (GSList *) g_object_get_data(G_OBJECT(parent), "passes");
+
+    passcount=g_slist_length(passes);
+    if (passcount>1)
+    {
+        firstpass = (pass_t *)g_slist_nth_data(passes,0);
+        lastpass = (pass_t *)g_slist_nth_data(passes,passcount-1);
+        multisat = g_strcmp0(firstpass->satname,lastpass->satname)!=0;
+    }
+
+
 
     /* create the dialog */
     dialog = gtk_dialog_new_with_buttons(_("Save Passes"), GTK_WINDOW(parent),
@@ -296,7 +309,7 @@ void save_passes(GtkWidget * parent)
 
     /* use satellite name + orbit num as default; replace invalid characters
        with dash */
-    savefile = g_strdup_printf("%s-passes", sat);
+    savefile = g_strdup_printf("%s-passes", multisat?_("MultipleSat"):sat);
     savefile = g_strdelimit(savefile, " ", '-');
     savefile = g_strdelimit(savefile, "!?/\\()*&%$#@[]{}=+<>,.|:;", '_');
     gtk_entry_set_text(GTK_ENTRY(filchooser), savefile);
@@ -334,7 +347,7 @@ void save_passes(GtkWidget * parent)
 
         /* call saver */
         save_passes_exec(dialog, passes, qth, savedir, savefile,
-                         SAVE_FORMAT_TXT, cont);
+                         SAVE_FORMAT_TXT, cont, multisat);
 
         /* store new settings */
         sat_cfg_set_str(SAT_CFG_STR_PRED_SAVE_DIR, savedir);
@@ -424,7 +437,7 @@ static void file_changed(GtkWidget * widget, gpointer data)
 static void save_passes_exec(GtkWidget * parent,
                              GSList * passes, qth_t * qth,
                              const gchar * savedir, const gchar * savefile,
-                             gint format, gint contents)
+                             gint format, gint contents, gboolean multisat)
 {
     gchar          *fname;
     gchar          *pgheader;
@@ -448,7 +461,7 @@ static void save_passes_exec(GtkWidget * parent,
         fields = sat_cfg_get_int(SAT_CFG_INT_PRED_MULTI_COL);
 
         /* create file contents */
-        pgheader = passes_to_txt_pgheader(passes, qth, fields);
+        pgheader = passes_to_txt_pgheader(passes, qth, fields, multisat);
         tblheader = passes_to_txt_tblheader(passes, qth, fields);
         tblcontents = passes_to_txt_tblcontents(passes, qth, fields);
 
@@ -458,7 +471,7 @@ static void save_passes_exec(GtkWidget * parent,
         g_free(tblheader);
         g_free(tblcontents);
 
-        if (contents == PASSES_CONTENT_FULL)
+        if (contents == PASSES_CONTENT_FULL && !multisat)
         {
             fields = sat_cfg_get_int(SAT_CFG_INT_PRED_SINGLE_COL);
             n = g_slist_length(passes);

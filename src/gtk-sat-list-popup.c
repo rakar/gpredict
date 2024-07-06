@@ -74,7 +74,7 @@ void gtk_sat_list_popup_exec(sat_t * sat, qth_t * qth, GdkEventButton * event,
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
     /* add the menu items for current,next, and future passes. */
-    add_pass_menu_items(menu, sat, qth, &list->tstamp, GTK_WIDGET(list));
+    add_pass_menu_items_sats(menu, sat, qth, &list->tstamp, GTK_WIDGET(list), list->satellites);
 
     gtk_widget_show_all(menu);
 

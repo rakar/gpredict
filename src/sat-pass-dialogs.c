@@ -54,6 +54,7 @@
 
 /** Column titles for multi-pass lists */
 const gchar    *MULTI_PASS_COL_TITLE[MULTI_PASS_COL_NUMBER] = {
+    N_("NAME"),
     N_("AOS"),
     N_("TCA"),
     N_("LOS"),
@@ -68,6 +69,7 @@ const gchar    *MULTI_PASS_COL_TITLE[MULTI_PASS_COL_NUMBER] = {
 
 /** Descriptive text for multi-pass list columns. */
 const gchar    *MULTI_PASS_COL_HINT[MULTI_PASS_COL_NUMBER] = {
+    N_("Satellite Name"),
     N_("Acquisition of signal (AOS)"),
     N_("Time of Closest Approach (TCA)"),
     N_("Loss of signal (LOS)"),
@@ -81,6 +83,7 @@ const gchar    *MULTI_PASS_COL_HINT[MULTI_PASS_COL_NUMBER] = {
 };
 
 const gdouble   MULTI_PASS_COL_XALIGN[MULTI_PASS_COL_NUMBER] = {
+    1.0,                        // Name
     0.5,                        // AOS
     0.5,                        // TCA
     0.5,                        // LOS
@@ -317,7 +320,8 @@ void show_pass(const gchar * satname, qth_t * qth, pass_t * pass,
     }
 
     /* create and fill model */
-    liststore = gtk_list_store_new(SINGLE_PASS_COL_NUMBER, G_TYPE_DOUBLE,       // time
+    liststore = gtk_list_store_new(SINGLE_PASS_COL_NUMBER, 
+                                   G_TYPE_DOUBLE,       // time
                                    G_TYPE_DOUBLE,       // az
                                    G_TYPE_DOUBLE,       // el
                                    G_TYPE_DOUBLE,       // ra
@@ -973,7 +977,9 @@ void show_passes(const gchar * satname, qth_t * qth, GSList * passes,
     }
 
     /* create and fill model */
-    liststore = gtk_list_store_new(MULTI_PASS_COL_NUMBER + 1, G_TYPE_DOUBLE,    // aos time
+    liststore = gtk_list_store_new(MULTI_PASS_COL_NUMBER + 1, 
+                                   G_TYPE_STRING,       // name
+                                   G_TYPE_DOUBLE,       // aos time
                                    G_TYPE_DOUBLE,       // tca time
                                    G_TYPE_DOUBLE,       // los time
                                    G_TYPE_DOUBLE,       // duration
@@ -993,6 +999,7 @@ void show_passes(const gchar * satname, qth_t * qth, GSList * passes,
         pass = PASS(g_slist_nth_data(passes, i));
         gtk_list_store_append(liststore, &item);
         gtk_list_store_set(liststore, &item,
+                           MULTI_PASS_COL_NAME, pass->satname,
                            MULTI_PASS_COL_AOS_TIME, pass->aos,
                            MULTI_PASS_COL_TCA, pass->tca,
                            MULTI_PASS_COL_LOS_TIME, pass->los,

@@ -7,13 +7,21 @@
 void            add_pass_menu_items(GtkWidget * menu, sat_t * sat,
                                     qth_t * qth, gdouble * tstamp,
                                     GtkWidget * widget);
+void            add_pass_menu_items_sats(GtkWidget * menu, sat_t * sat, qth_t * qth,
+                         gdouble * tstamp, GtkWidget * widget,
+                         GHashTable * sats);
 void            show_current_pass_cb(GtkWidget * menuitem, gpointer data);
 void            show_next_pass_cb(GtkWidget * menuitem, gpointer data);
 void            show_future_passes_cb(GtkWidget * menuitem, gpointer data);
+void            show_all_future_passes_cb(GtkWidget * menuitem, gpointer data);
 void            show_next_pass_dialog(sat_t * sat, qth_t * qth,
                                       gdouble tstamp, GtkWindow * toplevel);
 void            show_future_passes_dialog(sat_t * sat, qth_t * qth,
                                           gdouble tstamp,
                                           GtkWindow * toplevel);
+void            show_all_future_passes_dialog(sat_t * sat, qth_t * qth,
+                                          gdouble tstamp,
+                                          GtkWindow * toplevel,
+                                          GHashTable * sats);
 
 #endif

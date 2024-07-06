@@ -13,7 +13,7 @@ gchar          *pass_to_txt_tblcontents(pass_t * pass, qth_t * qth,
                                         gint fields);
 
 gchar          *passes_to_txt_pgheader(GSList * passes, qth_t * qth,
-                                       gint fields);
+                                       gint fields, gboolean multisat);
 gchar          *passes_to_txt_tblheader(GSList * passes, qth_t * qth,
                                         gint fields);
 gchar          *passes_to_txt_tblcontents(GSList * passes, qth_t * qth,

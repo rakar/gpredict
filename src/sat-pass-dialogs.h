@@ -35,7 +35,8 @@
 
 /** Column definitions for multi-pass listings. */
 typedef enum {
-    MULTI_PASS_COL_AOS_TIME = 0,        /*!< AOS time. */
+    MULTI_PASS_COL_NAME = 0,
+    MULTI_PASS_COL_AOS_TIME,        /*!< AOS time. */
     MULTI_PASS_COL_TCA,         /*!< Time of closest approach. */
     MULTI_PASS_COL_LOS_TIME,    /*!< LOS time. */
     MULTI_PASS_COL_DURATION,    /*!< Duration. */
@@ -50,6 +51,7 @@ typedef enum {
 
 /** Column flags for multi-pass listings. */
 typedef enum {
+    MULTI_PASS_FLAG_NAME = 1 << MULTI_PASS_COL_NAME,
     MULTI_PASS_FLAG_AOS_TIME = 1 << MULTI_PASS_COL_AOS_TIME,    /*!< AOS time. */
     MULTI_PASS_FLAG_TCA = 1 << MULTI_PASS_COL_TCA,      /*!< Time of closest approach. */
     MULTI_PASS_FLAG_LOS_TIME = 1 << MULTI_PASS_COL_LOS_TIME,    /*!< LOS time. */
