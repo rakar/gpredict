@@ -320,6 +320,15 @@ void show_future_passes_dialog(sat_t * sat, qth_t * qth, gdouble tstamp,
     }
 }
 
+/* this and the sort below are not working */
+// gint satNameCompare(gconstpointer a, gconstpointer b)
+// { 
+//     if (a==NULL && b==NULL) return 0;
+//     if (a==NULL) return -1;
+//     if (b==NULL) return  1;
+//     return g_strcmp0( ((sat_t*)a)->name, ((sat_t*)b)->name ); 
+// }
+
 void show_all_future_passes_dialog(sat_t * sat, qth_t * qth, gdouble tstamp,
                                GtkWindow * toplevel, GHashTable * sats)
 {
@@ -329,11 +338,14 @@ void show_all_future_passes_dialog(sat_t * sat, qth_t * qth, gdouble tstamp,
     guint           i;
     sat_t          *tmp_sat;
     GList          *satlist;
+    //GList          *unsorted;
 
     /* check wheather sat actially has AOS */
     // if (has_aos(sat, qth))
     // {
 
+    // unsorted = g_hash_table_get_values(sats);
+    // satlist = g_list_sort(unsorted, satNameCompare);
     satlist = g_hash_table_get_values(sats);
     sat_count = g_list_length(satlist);
     for(i=0; i<sat_count; i++) 
@@ -356,25 +368,27 @@ void show_all_future_passes_dialog(sat_t * sat, qth_t * qth, gdouble tstamp,
 
         }
 
-        sat_log_log(SAT_LOG_LEVEL_DEBUG,
-                _("%s: tmp %d passes %d "),
-                __func__, g_slist_length(tmppasses), g_slist_length(passes));
+        // sat_log_log(SAT_LOG_LEVEL_DEBUG,
+        //         _("%s: tmp %d passes %d "),
+        //         __func__, g_slist_length(tmppasses), g_slist_length(passes));
         passes = g_slist_concat(passes,tmppasses);
-        sat_log_log(SAT_LOG_LEVEL_DEBUG,
-                _("%s:x tmp %d passes %d "),
-                __func__, g_slist_length(tmppasses), g_slist_length(passes));
+        // sat_log_log(SAT_LOG_LEVEL_DEBUG,
+        //         _("%s:x tmp %d passes %d "),
+        //         __func__, g_slist_length(tmppasses), g_slist_length(passes));
         //g_slist_free(tmppasses);        
         //free_passes(tmppasses); 
-        sat_log_log(SAT_LOG_LEVEL_DEBUG,
-                _("%s:xx tmp %d passes %d "),
-                __func__, g_slist_length(tmppasses), g_slist_length(passes));
+        // sat_log_log(SAT_LOG_LEVEL_DEBUG,
+        //         _("%s:xx tmp %d passes %d "),
+        //         __func__, g_slist_length(tmppasses), g_slist_length(passes));
 
         
     }
     g_list_free(satlist);
-        sat_log_log(SAT_LOG_LEVEL_DEBUG,
-                _("%s:xxr passes %d "),
-                __func__, g_slist_length(passes));
+    //g_list_free(unsorted);
+
+        // sat_log_log(SAT_LOG_LEVEL_DEBUG,
+        //         _("%s:xxr passes %d "),
+        //         __func__, g_slist_length(passes));
 
         if (passes != NULL)
         {

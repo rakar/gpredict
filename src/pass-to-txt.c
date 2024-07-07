@@ -83,6 +83,7 @@ const guint     COLW[] = {
 
 
 const gchar    *MPCT[] = {
+    N_("SATELLITE     "),
     N_(" AOS"),
     N_("  TCA"),                /* 6 */
     N_("  LOS"),
@@ -97,6 +98,7 @@ const gchar    *MPCT[] = {
 
 
 const guint     MCW[] = {
+   15,
     0,
     0,
     0,
@@ -511,13 +513,16 @@ gchar          *passes_to_txt_tblheader(GSList * passes, qth_t * qth,
 
     /* add AOS, TCA, and LOS columns */
     buff = g_strnfill(size - 3, ' ');
-    line =
-        g_strconcat(_("SATELLITE      "),_(MPCT[0]), buff, _(MPCT[1]), buff, _(MPCT[2]), buff,
-                    NULL);
-    linelength = 3 * (size + 2);
+    line = g_strconcat(
+            _(MPCT[0]), _("  "), 
+            _(MPCT[1]), buff, 
+            _(MPCT[2]), buff,
+            _(MPCT[3]), buff,
+            NULL);
+    linelength = (MCW[0] + 2) + (3 * (size + 2));
     g_free(buff);
 
-    for (i = 3; i < 10; i++)
+    for (i = MULTI_PASS_COL_DURATION; i < MULTI_PASS_COL_NUMBER; i++)
     {
         if (fields & (1 << i))
         {
@@ -572,7 +577,7 @@ gchar          *passes_to_txt_tblcontents(GSList * passes, qth_t * qth,
         /* AOS */
         daynum_to_str(tbuff, TIME_FORMAT_MAX_LENGTH, fmtstr, pass->aos);
 
-        line = g_strdup_printf("%-15.15s %s", pass->satname, tbuff);
+        line = g_strdup_printf("%-*.*s  %s", MCW[0],MCW[0],pass->satname, tbuff);
 
         /* TCA */
         daynum_to_str(tbuff, TIME_FORMAT_MAX_LENGTH, fmtstr, pass->tca);

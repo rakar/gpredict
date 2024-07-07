@@ -83,7 +83,7 @@ const gchar    *MULTI_PASS_COL_HINT[MULTI_PASS_COL_NUMBER] = {
 };
 
 const gdouble   MULTI_PASS_COL_XALIGN[MULTI_PASS_COL_NUMBER] = {
-    1.0,                        // Name
+    0.0,                        // Name
     0.5,                        // AOS
     0.5,                        // TCA
     0.5,                        // LOS
