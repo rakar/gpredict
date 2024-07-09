@@ -43,6 +43,7 @@ struct _gtk_rot_ctrl {
     GtkWidget      *DevSel;
     GtkWidget      *plot;       /*!< Polar plot widget */
     GtkWidget      *LockBut;
+    GtkWidget      *ParkBut;    /*!< Park button*/
     GtkWidget      *MonitorCheckBox;
     GtkWidget      *track;
     GtkWidget      *cycle_spin;      /*!< Update timer cycle */

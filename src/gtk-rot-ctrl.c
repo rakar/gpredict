@@ -1414,6 +1414,27 @@ static void rot_monitor_cb(GtkCheckButton *button, gpointer data)
  *
  * This function is called when the user toggles the "Engage" button.
  */
+static void rot_park_cb(GtkToggleButton *button, gpointer data)
+{
+    GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
+
+    //g_print("park it\n");
+    gtk_toggle_button_set_active(ctrl->LockBut,FALSE);
+    gtk_toggle_button_set_active(ctrl->track,FALSE);
+    gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->AzSet), 0.0);
+    gtk_rot_knob_set_value(GTK_ROT_KNOB(ctrl->ElSet), 0.0);
+    gtk_toggle_button_set_active(ctrl->LockBut,TRUE);
+}
+
+
+/**
+ * Rotor locked.
+ *
+ * \param button Pointer to the "Engage" button.
+ * \param data Pointer to the GtkRotCtrl widget.
+ *
+ * This function is called when the user toggles the "Engage" button.
+ */
 static void rot_locked_cb(GtkToggleButton *button, gpointer data)
 {
     GtkRotCtrl *ctrl = GTK_ROT_CTRL(data);
@@ -1678,6 +1699,14 @@ static GtkWidget *create_conf_widgets(GtkRotCtrl *ctrl)
     g_signal_connect(ctrl->LockBut, "toggled", G_CALLBACK(rot_locked_cb),
                      ctrl);
     gtk_grid_attach(GTK_GRID(table), ctrl->LockBut, 2, 0, 1, 1);
+
+    /* Park button */
+    ctrl->ParkBut = gtk_button_new_with_label(_("Park"));
+    gtk_widget_set_tooltip_text(ctrl->ParkBut,
+                                _("Park the selected rotor device"));
+    g_signal_connect(ctrl->ParkBut, "clicked", G_CALLBACK(rot_park_cb),
+                     ctrl);
+    gtk_grid_attach(GTK_GRID(table), ctrl->ParkBut, 2, 1, 1, 1);
 
     /* Monitor checkbox */
     ctrl->MonitorCheckBox = gtk_check_button_new_with_label(_("Monitor"));
