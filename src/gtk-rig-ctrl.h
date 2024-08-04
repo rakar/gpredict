@@ -37,8 +37,10 @@ struct _gtk_rig_ctrl {
     GtkWidget      *SatDopUp;   /*!< Doppler shift up */
     GtkWidget      *LoDown;     /*!< LO of downconverter */
     GtkWidget      *LoUp;       /*!z LO of upconverter */
-    GtkWidget      *TrspLo;     /*!< Transponder Lo */
-    GtkWidget      *TrspHi;     /*!< Transponder Hi*/
+    GtkWidget      *TrspDownLo;     /*!< Transponder Lo */
+    GtkWidget      *TrspDownHi;     /*!< Transponder Hi*/
+    GtkWidget      *TrspUpLo;     /*!< Transponder Lo */
+    GtkWidget      *TrspUpHi;     /*!< Transponder Hi*/
 
     /* target status labels */
     GtkWidget      *SatAz, *SatEl, *SatCnt;

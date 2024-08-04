@@ -494,22 +494,22 @@ static GtkWidget *create_downlink_widgets(GtkRigCtrl * ctrl)
     g_object_set(label, "xalign", 1.0f, "yalign", 0.5f, NULL);
     gtk_box_pack_start(GTK_BOX(hbox2), label, FALSE, FALSE, 0);
 
-    ctrl->TrspLo = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(ctrl->TrspLo),
+    ctrl->TrspDownLo = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownLo),
                          "<span size='x-large'><b>---- Hz</b></span>");
-    gtk_widget_set_tooltip_text(ctrl->TrspLo,
+    gtk_widget_set_tooltip_text(ctrl->TrspDownLo,
                                 _("The transponder frequency range low."));
-    g_object_set(ctrl->TrspLo, "xalign", 0.0f, "yalign", 0.5f, NULL);
-    gtk_box_pack_start(GTK_BOX(hbox2), ctrl->TrspLo, FALSE, TRUE, 0);
+    g_object_set(ctrl->TrspDownLo, "xalign", 0.0f, "yalign", 0.5f, NULL);
+    gtk_box_pack_start(GTK_BOX(hbox2), ctrl->TrspDownLo, FALSE, TRUE, 0);
 
     /* Downlink Transponder Range Hi */
-    ctrl->TrspHi = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(ctrl->TrspHi),
+    ctrl->TrspDownHi = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownHi),
                          "<span size='x-large'><b>---- Hz</b></span>");
-    gtk_widget_set_tooltip_text(ctrl->TrspHi,
+    gtk_widget_set_tooltip_text(ctrl->TrspDownHi,
                                 _("The transponder frequency range high."));
-    g_object_set(ctrl->TrspHi, "xalign", 0.0f, "yalign", 0.5f, NULL);
-    gtk_box_pack_end(GTK_BOX(hbox2), ctrl->TrspHi, FALSE, TRUE, 0);
+    g_object_set(ctrl->TrspDownHi, "xalign", 0.0f, "yalign", 0.5f, NULL);
+    gtk_box_pack_end(GTK_BOX(hbox2), ctrl->TrspDownHi, FALSE, TRUE, 0);
 
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label),
@@ -546,7 +546,7 @@ static GtkWidget *create_uplink_widgets(GtkRigCtrl * ctrl)
 {
     GtkWidget      *frame;
     GtkWidget      *vbox;
-    GtkWidget      *hbox1, *hbox2;
+    GtkWidget      *hbox1, *hbox2, *hbox3;
     GtkWidget      *label;
 
     label = gtk_label_new(NULL);
@@ -559,6 +559,7 @@ static GtkWidget *create_uplink_widgets(GtkRigCtrl * ctrl)
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 10);
     hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    hbox3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
     /* satellite uplink frequency */
     ctrl->SatFreqUp = gtk_freq_knob_new(145890000.0, TRUE);
@@ -586,17 +587,48 @@ static GtkWidget *create_uplink_widgets(GtkRigCtrl * ctrl)
     g_object_set(label, "xalign", 1.0f, "yalign", 0.5f, NULL);
     gtk_box_pack_end(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
 
+    /* Uplink Transponder Range Lo */
+    label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label),
+                         "<span size='large'><b>Low:</b></span>");
+    g_object_set(label, "xalign", 1.0f, "yalign", 0.5f, NULL);
+    gtk_box_pack_start(GTK_BOX(hbox2), label, FALSE, FALSE, 0);
+
+    ctrl->TrspUpLo = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpLo),
+                         "<span size='x-large'><b>---- Hz</b></span>");
+    gtk_widget_set_tooltip_text(ctrl->TrspUpLo,
+                                _("The transponder frequency range low."));
+    g_object_set(ctrl->TrspUpLo, "xalign", 0.0f, "yalign", 0.5f, NULL);
+    gtk_box_pack_start(GTK_BOX(hbox2), ctrl->TrspUpLo, FALSE, TRUE, 0);
+
+    /* Downlink Transponder Range Hi */
+    ctrl->TrspUpHi = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpHi),
+                         "<span size='x-large'><b>---- Hz</b></span>");
+    gtk_widget_set_tooltip_text(ctrl->TrspUpHi,
+                                _("The transponder frequency range high."));
+    g_object_set(ctrl->TrspUpHi, "xalign", 0.0f, "yalign", 0.5f, NULL);
+    gtk_box_pack_end(GTK_BOX(hbox2), ctrl->TrspUpHi, FALSE, TRUE, 0);
+
+    label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label),
+                         "<span size='large'><b>High:</b></span>");
+    g_object_set(label, "xalign", 1.0f, "yalign", 0.5f, NULL);
+    gtk_box_pack_end(GTK_BOX(hbox2), label, FALSE, FALSE, 0);
+
     /* Radio uplink frequency */
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label),
                          "<span size='large'><b>Radio:</b></span>");
     g_object_set(label, "xalign", 0.5f, "yalign", 1.0f, NULL);
-    gtk_box_pack_start(GTK_BOX(hbox2), label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox3), label, TRUE, TRUE, 0);
     ctrl->RigFreqUp = gtk_freq_knob_new(145890000.0, FALSE);
-    gtk_box_pack_start(GTK_BOX(hbox2), ctrl->RigFreqUp, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox3), ctrl->RigFreqUp, TRUE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox1, TRUE, TRUE, 10);
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox3, TRUE, TRUE, 0);
     gtk_container_add(GTK_CONTAINER(frame), vbox);
 
     return frame;
@@ -611,19 +643,31 @@ static void set_trsp_range(gpointer data)
     if (ctrl->trsp==NULL)
     {
         buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
-        gtk_label_set_markup(GTK_LABEL(ctrl->TrspLo), buff);
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownLo), buff);
         g_free(buff);
         buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
-        gtk_label_set_markup(GTK_LABEL(ctrl->TrspHi), buff);
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownHi), buff);
+        g_free(buff);
+        buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpLo), buff);
+        g_free(buff);
+        buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpHi), buff);
         g_free(buff);
     }
     else
     {
         buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), ctrl->trsp->downlow);
-        gtk_label_set_markup(GTK_LABEL(ctrl->TrspLo), buff);
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownLo), buff);
         g_free(buff);
         buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), ctrl->trsp->downhigh);
-        gtk_label_set_markup(GTK_LABEL(ctrl->TrspHi), buff);
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownHi), buff);
+        g_free(buff);
+        buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), ctrl->trsp->uplow);
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpLo), buff);
+        g_free(buff);
+        buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), ctrl->trsp->uphigh);
+        gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpHi), buff);
         g_free(buff);
     }
 }
