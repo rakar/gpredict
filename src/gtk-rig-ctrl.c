@@ -312,6 +312,8 @@ void gtk_rig_ctrl_update(GtkRigCtrl * ctrl, gdouble t)
         gtk_label_set_text(GTK_LABEL(ctrl->SatDopDown), buff);
         g_free(buff);
 
+
+
         /* Doppler shift up */
         satfreq = gtk_freq_knob_get_value(GTK_FREQ_KNOB(ctrl->SatFreqUp));
         ctrl->du = satfreq * (ctrl->target->range_rate / 299792.4580);  // Hz
@@ -333,7 +335,44 @@ void gtk_rig_ctrl_update(GtkRigCtrl * ctrl, gdouble t)
             /* we don't have any current pass; store the current one */
             ctrl->pass = get_next_pass(ctrl->target, ctrl->qth, 3.0);
         }
+
+            // Update Lo and Hi with doppler
+         if (ctrl->trsp==NULL)
+        {
+            buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownLo), buff);
+            g_free(buff);
+            buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownHi), buff);
+            g_free(buff);
+            buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpLo), buff);
+            g_free(buff);
+            buff = g_strdup_printf(_("<span size='xx-large'>---- Hz</span>"));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpHi), buff);
+            g_free(buff);
+        }
+        else
+        {
+            buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), 
+            (gint64)(ctrl->dd+ctrl->trsp->downlow));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownLo), buff);
+            g_free(buff);
+            buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), 
+            (gint64)(ctrl->dd+ctrl->trsp->downhigh));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspDownHi), buff);
+            g_free(buff);
+            buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), 
+            (gint64)(ctrl->du+ctrl->trsp->uplow));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpLo), buff);
+            g_free(buff);
+            buff = g_strdup_printf(_("<span size='xx-large'>%'lld Hz</span>"), 
+            (gint64)(ctrl->du+ctrl->trsp->uphigh));
+            gtk_label_set_markup(GTK_LABEL(ctrl->TrspUpHi), buff);
+            g_free(buff);
+        }
     }
+
 
     g_mutex_unlock(&ctrl->rig_ctrl_updatelock);
 }
